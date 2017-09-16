@@ -23,12 +23,17 @@ func main() {
 
 	secure := router.Group("", echo.WrapMiddleware(authmiddleware.Authenticate))
 
-	//functionality
+	//get info
 	secure.GET("/devices/:host/env", handlers.GetEnvironmentVariables)
 	secure.GET("/devices/:host/uiconfig", handlers.GetUiConfig)
+
+	//add info
+	secure.POST("", handlers.AddNewDevice)
 
 	server := http.Server{
 		Addr:           PORT,
 		MaxHeaderBytes: 1024 * 10,
 	}
+
+	router.StartServer(&server)
 }

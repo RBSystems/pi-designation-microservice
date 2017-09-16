@@ -9,6 +9,13 @@ import (
 	"github.com/labstack/echo"
 )
 
+func GetDevice(context echo.Context) error {
+
+	log.Printf("[handlers] getting device...")
+
+	return context.JSON(http.StatusOK, "")
+}
+
 func GetEnvironmentVariables(context echo.Context) error {
 
 	host := context.Param("host")
@@ -35,4 +42,14 @@ func GetUiConfig(context echo.Context) error {
 	}
 
 	return context.JSON(http.StatusOK, config)
+}
+
+func AddNewDevice(context echo.Context) error {
+
+	//host := context.Param("host")
+	//	designation := context.Param("designation")
+
+	log.Printf("[handlers] adding new %s device %s...")
+
+	return context.JSON(http.StatusOK, "")
 }
