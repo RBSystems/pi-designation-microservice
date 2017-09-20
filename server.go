@@ -24,11 +24,11 @@ func main() {
 	secure := router.Group("", echo.WrapMiddleware(authmiddleware.Authenticate))
 
 	//get info
-	secure.GET("/devices/:host/env", handlers.GetEnvironmentVariables)
-	secure.GET("/devices/:host/uiconfig", handlers.GetUiConfig)
+	secure.GET("/rooms/:room/env", handlers.GetEnvironmentVariables)
+	secure.GET("/rooms/:room/uiconfig", handlers.GetUiConfig)
 
 	//add info
-	secure.POST("", handlers.AddNewDevice)
+	secure.POST("/rooms/add/:room/:designation", handlers.AddNewRoom)
 
 	server := http.Server{
 		Addr:           PORT,
