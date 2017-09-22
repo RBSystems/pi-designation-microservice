@@ -61,7 +61,7 @@ func AddNewRoom(context echo.Context) error {
 	designation := context.Param("designation")
 	log.Printf("[handlers] adding new %s room %s", designation, name)
 
-	var room accessors.RoomConfig
+	var room accessors.Room
 
 	err := context.Bind(&room)
 	if err != nil {

@@ -1,7 +1,17 @@
 package accessors
 
+type Room struct {
+	Config RoomConfig  `json:"config"`
+	Name   string      `json:"roomname"`
+	Desig  Designation `json:"designation"`
+}
+
+type Designation struct {
+	Name *string `json:"definition"`
+	ID   *int    `json:"id"`
+}
+
 type RoomConfig struct {
-	Name    string    `json:"roomname"`
 	API     ApiConfig `json:"apiconfig"`
 	Devices []Device  `json:"devices"`
 }
