@@ -17,7 +17,7 @@ var db *sql.DB
 func DB() *sql.DB {
 	once.Do(func() {
 		//build source data
-		var data string
+		data := "root:@tcp(localhost:3306)/"
 		var err error
 
 		db, err = sql.Open("mysql", data)

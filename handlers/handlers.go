@@ -61,16 +61,32 @@ func AddNewRoom(context echo.Context) error {
 	designation := context.Param("designation")
 	log.Printf("[handlers] adding new %s room %s", designation, name)
 
-	var room accessors.Room
+	//make sure room is not already represented
+	//this should error out - because the room shouldn't be there
+	room, err := accessors.GetRoomByName(name)
+	if err == nil {
+		msg := "room already in database"
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
 
-	err := context.Bind(&room)
+	err = context.Bind(&room)
 	if err != nil {
 		msg := fmt.Sprintf("unable to unmarshal JSON object: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
 		return context.JSON(http.StatusBadRequest, msg)
 	}
 
-	room, err = accessors.AddNewRoom(room, designation)
+	//validate room designation
+	//this should not error out - the designation should already be there
+	designation, err := accessors.GetDesignationByName(room.Designation.Name)
+	if err != nil {
+		msg := fmt.Sprintf("unable to validate room designation %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	room, err = accessors.AddNewRoom(room)
 	if err != nil {
 		msg := fmt.Sprintf("unable to add new room: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))

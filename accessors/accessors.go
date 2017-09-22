@@ -1,8 +1,9 @@
 package accessors
 
 type Room struct {
-	Config RoomConfig  `json:"config"`
 	Name   string      `json:"roomname"`
+	ID     int         `json:"id"`
+	Config RoomConfig  `json:"config"`
 	Desig  Designation `json:"designation"`
 }
 
