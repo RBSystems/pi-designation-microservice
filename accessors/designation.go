@@ -24,19 +24,19 @@ func GetDesignationById(ID int) (designation Designation, err error) {
 	return
 }
 
-func GetDesignationByName(name string) (designation Designation, err error) {
+func GetDesignationByName(name string) (Designation, error) {
 
-	log.Printf("[accessors] getting room designtion by name: %s...", name)
+	log.Printf("[accessors] getting room designation by name: %s...", name)
 
-	err = database.DB().QueryRow(`SELECT * from designation_definition where designation_ID = ?`, name).Scan(designation.Name, designation.ID)
+	var output Designation
+	err := database.DB().QueryRow(`SELECT * from designation_definition where designation = ?`, name).Scan(&output.Name, &output.ID)
 	if err != nil {
 		msg := fmt.Sprintf("unable to query database: %s", err.Error())
 		log.Printf("[accessors] %s", color.HiRedString("%s", msg))
-		err = errors.New(msg)
-		return
+		return Designation{}, errors.New(msg)
 	}
 
-	return
+	return output, nil
 }
 
 func GetAllDesignations() ([]Designation, error) {

@@ -8,8 +8,8 @@ type Room struct {
 }
 
 type Designation struct {
-	Name *string `json:"definition"`
-	ID   *int    `json:"id"`
+	Name string `json:"definition"`
+	ID   int    `json:"id"`
 }
 
 type RoomConfig struct {

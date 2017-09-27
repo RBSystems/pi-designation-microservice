@@ -5,6 +5,8 @@ import (
 	"log"
 	"sync"
 
+	_ "github.com/go-sql-driver/mysql" // Blank import due to its use as a driver
+
 	"github.com/fatih/color"
 )
 
@@ -17,7 +19,7 @@ var db *sql.DB
 func DB() *sql.DB {
 	once.Do(func() {
 		//build source data
-		data := "root:@tcp(localhost:3306)/"
+		data := "root:@tcp(localhost:3306)/room_designation"
 		var err error
 
 		db, err = sql.Open("mysql", data)
