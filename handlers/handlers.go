@@ -58,8 +58,7 @@ func AddNewDevice(context echo.Context) error {
 func AddNewRoom(context echo.Context) error {
 
 	name := context.Param("room")
-	designation := context.Param("designation")
-	log.Printf("[handlers] adding new %s room %s", designation, name)
+	log.Printf("[handlers] adding new room: %s", name)
 
 	//make sure room is not already represented
 	//this should error out - because the room shouldn't be there
@@ -79,16 +78,23 @@ func AddNewRoom(context echo.Context) error {
 
 	//validate room designation
 	//this should not error out - the designation should already be there
-	designation, err := accessors.GetDesignationByName(room.Designation.Name)
+	_, err = accessors.GetDesignationByName(*room.Desig.Name)
 	if err != nil {
 		msg := fmt.Sprintf("unable to validate room designation %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
 		return context.JSON(http.StatusBadRequest, msg)
 	}
 
-	room, err = accessors.AddNewRoom(room)
+	err = accessors.AddNewRoom(room)
 	if err != nil {
 		msg := fmt.Sprintf("unable to add new room: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusInternalServerError, msg)
+	}
+
+	room, err := accessors.GetRoomByName(room.Name)
+	if err != nil {
+		msg := fmt.Sprintf("unable retrieve new room: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
 		return context.JSON(http.StatusInternalServerError, msg)
 	}
