@@ -119,29 +119,12 @@ func EditVariable(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, msg)
 	}
 
-	//this shouldn't error out because it's already there
-	dummy := ac.Variable{
-		Desig: variable.Desig,
-		Key:   "c",
-		Value: "monster",
-		ID:    0,
-	}
-
-	exists := ac.FillVariable(&dummy)
-	if exists != nil {
-		msg := fmt.Sprintf("variable not present in database: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
-	}
-
-	log.Printf("%s", color.HiCyanString("this is a PERFECT time to panic!!"))
-
 	//make edit
 	err = ac.EditVariable(variable)
 	if err != nil {
 		msg := fmt.Sprintf("unable to edit variable: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusInternalServerError, msg)
+		return context.JSON(http.StatusBadRequest, msg)
 	}
 
 	return context.JSON(http.StatusOK, variable)

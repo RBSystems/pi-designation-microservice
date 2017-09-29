@@ -76,9 +76,24 @@ func EditVariable(variable Variable) error {
 
 	log.Printf("[accessors] updating %s %s...", variable.Desig.Name, variable.Key)
 
-	_, err := database.DB().Exec("UPDATE variables SET variable_value = ? WHERE variable_key = ? AND designation_ID = ?", variable.Value, variable.Key, variable.Desig.ID)
+	result, err := database.DB().Exec("UPDATE variables SET variable_value = ? WHERE variable_key = ? AND designation_ID = ?", variable.Value, variable.Key, variable.Desig.ID)
 	if err != nil {
 		msg := fmt.Sprintf("unable to update row: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return errors.New(msg)
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		msg := fmt.Sprintf("unknown number of rows affected: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return errors.New(msg)
+	}
+
+	log.Printf("[accessors] rows affected: %d", rows)
+
+	if rows == 0 {
+		msg := fmt.Sprintf("no rows found with key: %s and designation ID: %d", variable.Key, variable.Desig.ID)
 		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
 		return errors.New(msg)
 	}
