@@ -15,8 +15,8 @@ func GetDesignationById(ID int) (designation Designation, err error) {
 
 	err = database.DB().QueryRow(`SELECT * from designation_definition where designation = ?`, ID).Scan(designation.Name, designation.ID)
 	if err != nil {
-		msg := fmt.Sprintf("unable to query database: %s", err.Error())
-		log.Printf("[accessors] %s", color.HiRedString("%s", msg))
+		msg := fmt.Sprintf("problem with query: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
 		err = errors.New(msg)
 		return
 	}
@@ -31,10 +31,12 @@ func GetDesignationByName(name string) (Designation, error) {
 	var output Designation
 	err := database.DB().QueryRow(`SELECT * from designation_definition where designation = ?`, name).Scan(&output.Name, &output.ID)
 	if err != nil {
-		msg := fmt.Sprintf("unable to query database: %s", err.Error())
-		log.Printf("[accessors] %s", color.HiRedString("%s", msg))
+		msg := fmt.Sprintf("problem with query: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
 		return Designation{}, errors.New(msg)
 	}
+
+	log.Printf("%s", color.HiCyanString("Sherrif, this is no time to panic!"))
 
 	return output, nil
 }
@@ -46,7 +48,7 @@ func GetAllDesignations() ([]Designation, error) {
 	rows, err := database.DB().Query(`SELECT * from designation_definition`)
 	if err != nil {
 		msg := fmt.Sprintf("unable to execute query %s", err.Error())
-		log.Printf("[accessors] %s", color.HiRedString("%s", msg))
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
 		return []Designation{}, errors.New(msg)
 	}
 
@@ -58,7 +60,7 @@ func GetAllDesignations() ([]Designation, error) {
 
 		err = rows.Scan(designation.Name, designation.ID)
 		if err != nil {
-			msg := fmt.Sprintf("unable to scan row: %s", err.Error())
+			msg := fmt.Sprintf("problem with row scan: %s", err.Error())
 			log.Printf("[accessors] %s", color.HiRedString("%s", msg))
 			return []Designation{}, errors.New(msg)
 		}
