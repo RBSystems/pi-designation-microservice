@@ -25,3 +25,21 @@ func AddDesignation(context echo.Context) error {
 
 	return context.JSON(http.StatusOK, designation)
 }
+
+//this will cause a cascading delete
+//be careful doing this
+func DeleteDesignation(context echo.Context) error {
+
+	desig := context.Param("designation")
+	log.Printf("[handlers] removing designation definition")
+
+	designation := ac.Designation{Name: desig}
+	err := ac.DeleteDesignation(designation)
+	if err != nil {
+		msg := fmt.Sprintf("designation not removed: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusInternalServerError, msg)
+	}
+
+	return context.JSON(http.StatusOK, designation)
+}

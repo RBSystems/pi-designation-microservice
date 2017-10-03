@@ -32,7 +32,7 @@ func main() {
 
 	//add info
 	secure.POST("/rooms/add/:room/:designation", handlers.AddNewRoom)
-	secure.POST("/variables/add/:key", handlers.AddVariable)
+	secure.POST("/variables/add", handlers.AddVariable)
 	secure.POST("/designations/add/:definition", handlers.AddDesignation)
 
 	//edit info
@@ -40,6 +40,7 @@ func main() {
 
 	//delete info
 	secure.DELETE("/variables/delete/:key/:designation", handlers.DeleteVariable)
+	secure.DELETE("/designations/delete/:designation", handlers.DeleteDesignation)
 
 	server := http.Server{
 		Addr:           PORT,

@@ -12,8 +12,6 @@ import (
 
 func AddVariable(context echo.Context) error {
 
-	log.Printf("[handlers] handling request to add variable: %s", context.Param("key"))
-
 	//bind context
 	var variable ac.Variable
 	err := context.Bind(&variable)
@@ -22,6 +20,8 @@ func AddVariable(context echo.Context) error {
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
 		return context.JSON(http.StatusBadRequest, msg)
 	}
+
+	log.Printf("[handlers] handling request to add variable: %s", variable.Key)
 
 	//validate key and value
 	err = ac.ValidateVar(variable)

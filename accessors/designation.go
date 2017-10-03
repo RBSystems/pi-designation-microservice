@@ -84,19 +84,6 @@ func AddDesignation(designation *Designation) error {
 		return errors.New(msg)
 	}
 
-	rows, err := result.RowsAffected()
-	if err != nil {
-		msg := fmt.Sprintf("unknown number of rows affected: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-		return errors.New(msg)
-	}
-
-	if rows == 0 {
-		msg := "room designation already present"
-		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-		return errors.New(msg)
-	}
-
 	id, err := result.LastInsertId()
 	if err != nil {
 		msg := fmt.Sprintf("new designation ID not found: %s", err.Error())
@@ -109,9 +96,16 @@ func AddDesignation(designation *Designation) error {
 	return nil
 }
 
-func RemoveDesignation(designation Designation) error {
+func DeleteDesignation(designation Designation) error {
 
 	log.Printf("[accessors] removing room desigation %s", designation.Name)
+
+	_, err := database.DB().Exec("DELETE from designation_definition WHERE designation = ?", designation.Name)
+	if err != nil {
+		msg := fmt.Sprintf("problem deleting designation: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return errors.New(msg)
+	}
 
 	return nil
 }
