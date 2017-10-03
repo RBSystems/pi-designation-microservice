@@ -27,13 +27,19 @@ func main() {
 	secure.GET("/rooms/:room/env", handlers.GetEnvironmentVariables)
 	secure.GET("/rooms/:room/uiconfig", handlers.GetUiConfig)
 	secure.GET("/variables/get/:key/:designation", handlers.GetVariable)
+	secure.GET("/variables/get/:designation", handlers.GetVarsByDesignation)
+	secure.GET("/variables/get/all", handlers.GetAllVariables)
 
 	//add info
 	secure.POST("/rooms/add/:room/:designation", handlers.AddNewRoom)
 	secure.POST("/variables/add/:key", handlers.AddVariable)
+	secure.POST("/designations/add/:definition", handlers.AddDesignation)
 
 	//edit info
 	secure.PUT("/variables/edit/:key", handlers.EditVariable)
+
+	//delete info
+	secure.DELETE("/variables/delete/:key/:designation", handlers.DeleteVariable)
 
 	server := http.Server{
 		Addr:           PORT,

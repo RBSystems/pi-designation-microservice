@@ -34,7 +34,7 @@ func AddNewVariable(variable Variable) error {
 
 	log.Printf("[accessors] adding variable %s: %s with designation %s...", variable.Key, variable.Value, variable.Desig.Name)
 
-	_, err := database.DB().Exec(`INSERT into variables (designation_ID, variable_key, variable_value) values(?,?,?)`, variable.Desig.ID, variable.Key, variable.Value)
+	_, err := database.DB().Exec(`INSERT into variables (desig_id, name, value) values(?,?,?)`, variable.Desig.ID, variable.Key, variable.Value)
 	if err != nil {
 		msg := fmt.Sprintf("unable to add row to table: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
@@ -49,13 +49,8 @@ func AddNewVariable(variable Variable) error {
 func FillVariable(variable *Variable) error {
 
 	log.Printf("[accessors] searching for %s %s", variable.Desig.Name, variable.Key)
-	log.Printf("%s", color.HiBlueString("variable: %v", variable))
-	log.Printf("%s", color.HiGreenString("%s", variable.Key))
-	log.Printf("%s", color.HiGreenString("%d", variable.Desig.ID))
-	log.Printf("%s", color.HiGreenString("%d", variable.ID))
-	log.Printf("%s", color.HiGreenString("%s", variable.Value))
 
-	rows, err := database.DB().Query("SELECT variable_ID, variable_value from variables WHERE variable_key = ? AND designation_ID = ?", variable.Key, variable.Desig.ID)
+	rows, err := database.DB().Query("SELECT id, value from variables WHERE name = ? AND desig_id = ?", variable.Key, variable.Desig.ID)
 	if err != nil {
 		msg := fmt.Sprintf("unable to get row data for variable: %s", err.Error())
 		return errors.New(msg)
@@ -76,7 +71,7 @@ func EditVariable(variable Variable) error {
 
 	log.Printf("[accessors] updating %s %s...", variable.Desig.Name, variable.Key)
 
-	result, err := database.DB().Exec("UPDATE variables SET variable_value = ? WHERE variable_key = ? AND designation_ID = ?", variable.Value, variable.Key, variable.Desig.ID)
+	result, err := database.DB().Exec("UPDATE variables SET value = ? WHERE name = ? AND desig_id = ?", variable.Value, variable.Key, variable.Desig.ID)
 	if err != nil {
 		msg := fmt.Sprintf("unable to update row: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
@@ -107,10 +102,23 @@ func DeleteVariable(variable Variable) error {
 
 	log.Printf("[accessors] removing %s %s from database...", variable.Desig.Name, variable.Key)
 
-	_, err := database.DB().Query("DELETE from variables WHERE variable_key = ? AND designation_ID = ?", variable.Key, variable.Desig.ID)
+	result, err := database.DB().Exec("DELETE from variables WHERE name = ? AND desig_id = ?", variable.Key, variable.Desig.ID)
 	if err != nil {
 		msg := fmt.Sprintf("unable to delete row: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[accessors %s", msg))
+		return errors.New(msg)
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		msg := fmt.Sprintf("unkown number of rows affected: %s")
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return errors.New(msg)
+	}
+
+	if rows == 0 {
+		msg := fmt.Sprintf("row with key: %s and designation: %s not found", variable.Key, variable.Desig.Name)
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
 		return errors.New(msg)
 	}
 
@@ -138,7 +146,7 @@ func GetVariablesByDesignation(designation Designation) ([]Variable, error) {
 
 	log.Printf("[accessors] fetching all variables with designation: %s", designation.Name)
 
-	rows, err := database.DB().Query("SELECT * from variables WHERE designation_ID = ?", designation.ID)
+	rows, err := database.DB().Query("SELECT * from variables WHERE desig_id = ?", designation.ID)
 	if err != nil {
 		msg := fmt.Sprintf("unable to get rows: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[accessors %s", msg))

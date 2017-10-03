@@ -9,7 +9,7 @@ import (
 	"github.com/fatih/color"
 )
 
-func GetDesignationById(ID int) (designation Designation, err error) {
+func GetDesignationById(ID int64) (designation Designation, err error) {
 
 	log.Printf("[accessors] getting room designation by id: %v...", ID)
 
@@ -36,7 +36,7 @@ func GetDesignationByName(name string) (Designation, error) {
 		return Designation{}, errors.New(msg)
 	}
 
-	log.Printf("%s", color.HiCyanString("Sherrif, this is no time to panic!"))
+	log.Printf("%s", color.HiCyanString("Sheriff, this is no time to panic!"))
 
 	return output, nil
 }
@@ -73,9 +73,38 @@ func GetAllDesignations() ([]Designation, error) {
 
 }
 
-func AddDesignation(designation Designation) error {
+func AddDesignation(designation *Designation) error {
 
 	log.Printf("[accessors] adding new room designation %s", designation.Name)
+
+	result, err := database.DB().Exec("INSERT into designation_definition (designation) values(?)", designation.Name)
+	if err != nil {
+		msg := fmt.Sprintf("designation not added: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return errors.New(msg)
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		msg := fmt.Sprintf("unknown number of rows affected: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return errors.New(msg)
+	}
+
+	if rows == 0 {
+		msg := "room designation already present"
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return errors.New(msg)
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		msg := fmt.Sprintf("new designation ID not found: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return errors.New(msg)
+	}
+
+	designation.ID = id
 
 	return nil
 }

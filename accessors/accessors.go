@@ -9,7 +9,7 @@ type Room struct {
 
 type Designation struct {
 	Name string `json:"definition"`
-	ID   int    `json:"id"`
+	ID   int64  `json:"id"`
 }
 
 type RoomConfig struct {

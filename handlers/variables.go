@@ -129,3 +129,69 @@ func EditVariable(context echo.Context) error {
 
 	return context.JSON(http.StatusOK, variable)
 }
+
+func DeleteVariable(context echo.Context) error {
+
+	key := context.Param("key")
+	desig := context.Param("designation")
+	log.Printf("[handlers] deleting %s-designated variable %s", key, desig)
+
+	designation, err := ac.GetDesignationByName(desig)
+	if err != nil {
+		msg := fmt.Sprintf("invalid designation: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	variable := ac.Variable{
+		Key:   key,
+		Desig: designation,
+	}
+
+	err = ac.DeleteVariable(variable)
+	if err != nil {
+		msg := fmt.Sprintf("variable not deleted: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	return context.JSON(http.StatusOK, "success")
+}
+
+func GetAllVariables(context echo.Context) error {
+
+	log.Printf("[handlers] getting all variables...")
+
+	vars, err := ac.GetAllVariables()
+	if err != nil {
+		msg := fmt.Sprintf("variables not found: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusInternalServerError, msg)
+	}
+
+	return context.JSON(http.StatusOK, vars)
+}
+
+func GetVarsByDesignation(context echo.Context) error {
+
+	designation := context.Param("desigation")
+	log.Printf("[hanlders] getting all variables corresponding to designation: %s", designation)
+
+	//build designation
+	desig, err := ac.GetDesignationByName(designation)
+	if err != nil {
+		msg := fmt.Sprintf("designation %s not found: %s", designation, err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	//get vars by designation
+	vars, err := ac.GetVariablesByDesignation(desig)
+	if err != nil {
+		msg := fmt.Sprintf("variables not found: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	return context.JSON(http.StatusOK, vars)
+}
