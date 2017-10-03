@@ -40,12 +40,12 @@ func AddVariable(context echo.Context) error {
 	}
 
 	//make sure it's not already there, this should error out because the variable isn't there
-	exists := ac.FillVariable(&variable)
-	if exists == nil {
-		msg := fmt.Sprintf("variable: %s already present in database", variable.Key)
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
-	}
+	//	exists := ac.FillVariable(&variable)
+	//	if exists == nil {
+	//		msg := fmt.Sprintf("variable: %s already present in database", variable.Key)
+	//		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+	//		return context.JSON(http.StatusBadRequest, msg)
+	//	}
 
 	//add variable
 	err = ac.AddNewVariable(variable)
