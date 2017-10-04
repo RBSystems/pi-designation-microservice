@@ -26,10 +26,7 @@ test:
         - cd $BUILD_PATH && go test -v -race $(go list ./... | grep -v /vendor/)
 
 deployment:
-        branch: master
-        commands:
-            - cd $BUILD_PATH && env GOOS=linux GOARCH=arm go build -v -o ${CIRCLE_PROJECT_REPONAME}-arm
-            - docker build -t byuoitav/${CIRCLE_PROJECT_REPONAME} .
-            - docker login -e $DOCKER_EMAIL -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-            - docker push byuoitav/${CIRCLE_PROJECT_REPONAME}
-            - docker push byuoitav/rpi-${CIRCLE_PROJECT_REPONAME}
+    commands:
+        - docker build -t byuoitav/${CIRCLE_PROJECT_REPONAME} .
+        - docker login -e $DOCKER_EMAIL -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+        - docker push byuoitav/${CIRCLE_PROJECT_REPONAME}
