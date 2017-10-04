@@ -29,9 +29,7 @@ deployment:
         branch: master
         commands:
             - cd $BUILD_PATH && env GOOS=linux GOARCH=arm go build -v -o ${CIRCLE_PROJECT_REPONAME}-arm
-            - docker build -f Dockerfile-ARM -t byuoitav/rpi-${CIRCLE_PROJECT_REPONAME}:development .
-            - docker build -f Dockerfile-development -t byuoitav/${CIRCLE_PROJECT_REPONAME}:development .
+            - docker build -f Dockerfile -t byuoitav/${CIRCLE_PROJECT_REPONAME}
             - docker login -e $DOCKER_EMAIL -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
             - docker push byuoitav/${CIRCLE_PROJECT_REPONAME}
             - docker push byuoitav/rpi-${CIRCLE_PROJECT_REPONAME}
-            - ./deploy-pi.sh development
