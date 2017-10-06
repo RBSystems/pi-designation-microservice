@@ -30,3 +30,4 @@ deployment:
         - docker build -t byuoitav/${CIRCLE_PROJECT_REPONAME} .
         - docker login -e $DOCKER_EMAIL -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
         - docker push byuoitav/${CIRCLE_PROJECT_REPONAME}
+        - ./deploy.sh $CIRCLE_PROJECT_REPONAME $CIRCLE_SHA1
