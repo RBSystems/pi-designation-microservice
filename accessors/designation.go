@@ -13,7 +13,7 @@ func GetDesignationById(ID int64) (designation Designation, err error) {
 
 	log.Printf("[accessors] getting room designation by id: %v...", ID)
 
-	err = database.DB().QueryRow(`SELECT * from designation_definition where designation = ?`, ID).Scan(designation.Name, designation.ID)
+	err = database.DB().QueryRow(`SELECT * from designation_definition where designation_ID = ?`, ID).Scan(&designation.Name, &designation.ID)
 	if err != nil {
 		msg := fmt.Sprintf("problem with query: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[accessors] %s", msg))

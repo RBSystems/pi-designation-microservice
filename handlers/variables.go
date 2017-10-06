@@ -174,7 +174,7 @@ func GetAllVariables(context echo.Context) error {
 
 func GetVarsByDesignation(context echo.Context) error {
 
-	designation := context.Param("desigation")
+	designation := context.Param("designation")
 	log.Printf("[hanlders] getting all variables corresponding to designation: %s", designation)
 
 	//build designation

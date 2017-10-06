@@ -26,9 +26,9 @@ func main() {
 	//get info
 	secure.GET("/rooms/:room/env", handlers.GetEnvironmentVariables)
 	secure.GET("/rooms/:room/uiconfig", handlers.GetUiConfig)
-	secure.GET("/variables/get/:key/:designation", handlers.GetVariable)
-	secure.GET("/variables/get/:designation", handlers.GetVarsByDesignation)
-	secure.GET("/variables/get/all", handlers.GetAllVariables)
+	secure.GET("/variables/:key/:designation", handlers.GetVariable)
+	secure.GET("/variables/:designation", handlers.GetVarsByDesignation)
+	secure.GET("/variables/all", handlers.GetAllVariables)
 
 	//add info
 	secure.POST("/rooms/add/:room/:designation", handlers.AddNewRoom)
