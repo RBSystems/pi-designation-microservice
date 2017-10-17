@@ -1,6 +1,6 @@
 -- MySQL dump 10.16  Distrib 10.2.8-MariaDB, for osx10.12 (x86_64)
 --
--- Host: localhost    Database: room_designation
+-- Host: localhost    Database: room_designation_2
 -- ------------------------------------------------------
 -- Server version	10.2.8-MariaDB
 
@@ -16,28 +16,108 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `designation_definition`
+-- Table structure for table `class_definitions`
 --
 
-DROP TABLE IF EXISTS `designation_definition`;
+DROP TABLE IF EXISTS `class_definitions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `designation_definition` (
-  `designation` varchar(20) NOT NULL,
-  `designation_ID` int(11) NOT NULL AUTO_INCREMENT,
-  PRIMARY KEY (`designation_ID`),
-  UNIQUE KEY `designation` (`designation`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
+CREATE TABLE `class_definitions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `description` varchar(1024) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `designation_definition`
+-- Dumping data for table `class_definitions`
 --
 
-LOCK TABLES `designation_definition` WRITE;
-/*!40000 ALTER TABLE `designation_definition` DISABLE KEYS */;
-INSERT INTO `designation_definition` VALUES ('development',1),('production',4),('stage',3),('testing',2);
-/*!40000 ALTER TABLE `designation_definition` ENABLE KEYS */;
+LOCK TABLES `class_definitions` WRITE;
+/*!40000 ALTER TABLE `class_definitions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `class_definitions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `designation_definitions`
+--
+
+DROP TABLE IF EXISTS `designation_definitions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `designation_definitions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `description` varchar(1024) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `designation_definitions`
+--
+
+LOCK TABLES `designation_definitions` WRITE;
+/*!40000 ALTER TABLE `designation_definitions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `designation_definitions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `microservice_definitions`
+--
+
+DROP TABLE IF EXISTS `microservice_definitions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `microservice_definitions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `yaml` blob NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `microservice_definitions`
+--
+
+LOCK TABLES `microservice_definitions` WRITE;
+/*!40000 ALTER TABLE `microservice_definitions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `microservice_definitions` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `microservice_mappings`
+--
+
+DROP TABLE IF EXISTS `microservice_mappings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `microservice_mappings` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `designation_id` int(11) NOT NULL,
+  `microservice_id` int(11) NOT NULL,
+  `class_id` int(11) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `designation_id` (`designation_id`,`microservice_id`,`class_id`),
+  KEY `microservice_id` (`microservice_id`),
+  KEY `class_id` (`class_id`),
+  CONSTRAINT `microservice_mappings_ibfk_1` FOREIGN KEY (`designation_id`) REFERENCES `designation_definitions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `microservice_mappings_ibfk_2` FOREIGN KEY (`microservice_id`) REFERENCES `microservice_definitions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `microservice_mappings_ibfk_3` FOREIGN KEY (`class_id`) REFERENCES `class_definitions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `microservice_mappings`
+--
+
+LOCK TABLES `microservice_mappings` WRITE;
+/*!40000 ALTER TABLE `microservice_mappings` DISABLE KEYS */;
+/*!40000 ALTER TABLE `microservice_mappings` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
@@ -48,14 +128,13 @@ DROP TABLE IF EXISTS `rooms`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `rooms` (
-  `room_ID` int(11) NOT NULL AUTO_INCREMENT,
-  `name` varchar(20) NOT NULL,
-  `designation_ID` int(11) DEFAULT NULL,
-  `ui_config` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  PRIMARY KEY (`room_ID`),
-  KEY `designation_ID` (`designation_ID`),
-  CONSTRAINT `rooms_ibfk_1` FOREIGN KEY (`designation_ID`) REFERENCES `designation_definition` (`designation_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `designation_id` int(11) NOT NULL,
+  `ui_configuration` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `designation_id` (`designation_id`),
+  CONSTRAINT `rooms_ibfk_1` FOREIGN KEY (`designation_id`) REFERENCES `designation_definitions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -64,62 +143,63 @@ CREATE TABLE `rooms` (
 
 LOCK TABLES `rooms` WRITE;
 /*!40000 ALTER TABLE `rooms` DISABLE KEYS */;
-INSERT INTO `rooms` VALUES (1,'ITB-1101',1,'{\'c\':\'Monster\'}'),(2,'ITB-1102',1,'{\'d\':\'Monster\'}'),(3,'ITB-3006',1,'{\"apiconfig\":{\"enabled\":true,\"backups\":{\"1\":\"ITB-3006-CP2\"}},\"devices\":[{\"ui\":\"circle-default\",\"inputdevices\":[{\"name\":\"appleTV\",\"icon\":\"apple\"}],\"displays\":[],\"audio\":[],\"features\":[]}]}'),(4,'CTB-410',1,'{\"apiconfig\":{\"enabled\":true,\"backups\":{\"1\":\"ITB-3006-CP2\"}},\"devices\":[{\"ui\":\"circle-default\",\"inputdevices\":[{\"name\":\"appleTV\",\"icon\":\"apple\"}],\"displays\":[],\"audio\":[],\"features\":[]}]}');
 /*!40000 ALTER TABLE `rooms` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `ui_config`
+-- Table structure for table `variable_definitions`
 --
 
-DROP TABLE IF EXISTS `ui_config`;
+DROP TABLE IF EXISTS `variable_definitions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `ui_config` (
-  `config_ID` int(11) NOT NULL AUTO_INCREMENT,
-  `room_ID` int(11) NOT NULL,
-  `config_file` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  PRIMARY KEY (`config_ID`),
-  KEY `room_ID` (`room_ID`),
-  CONSTRAINT `ui_config_ibfk_1` FOREIGN KEY (`room_ID`) REFERENCES `rooms` (`room_ID`)
+CREATE TABLE `variable_definitions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) NOT NULL,
+  `value` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`,`value`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `ui_config`
+-- Dumping data for table `variable_definitions`
 --
 
-LOCK TABLES `ui_config` WRITE;
-/*!40000 ALTER TABLE `ui_config` DISABLE KEYS */;
-/*!40000 ALTER TABLE `ui_config` ENABLE KEYS */;
+LOCK TABLES `variable_definitions` WRITE;
+/*!40000 ALTER TABLE `variable_definitions` DISABLE KEYS */;
+/*!40000 ALTER TABLE `variable_definitions` ENABLE KEYS */;
 UNLOCK TABLES;
 
 --
--- Table structure for table `variables`
+-- Table structure for table `variable_mappings`
 --
-DROP TABLE IF EXISTS `variables`;
+
+DROP TABLE IF EXISTS `variable_mappings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `variables` (
+CREATE TABLE `variable_mappings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `desig_id` int(11) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `value` varchar(100) NOT NULL,
+  `designation_id` int(11) NOT NULL,
+  `variable_id` int(11) NOT NULL,
+  `class_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `desig_name` (`name`,`desig_id`),
-  KEY `desig_id` (`desig_id`),
-  CONSTRAINT `variables_ibfk_1` FOREIGN KEY (`desig_id`) REFERENCES `designation_definition` (`designation_ID`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
+  UNIQUE KEY `designation_id` (`designation_id`,`variable_id`,`class_id`),
+  KEY `variable_id` (`variable_id`),
+  KEY `class_id` (`class_id`),
+  CONSTRAINT `variable_mappings_ibfk_1` FOREIGN KEY (`designation_id`) REFERENCES `designation_definitions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `variable_mappings_ibfk_2` FOREIGN KEY (`variable_id`) REFERENCES `variable_definitions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `variable_mappings_ibfk_3` FOREIGN KEY (`class_id`) REFERENCES `class_definitions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `variables`
+-- Dumping data for table `variable_mappings`
 --
 
-LOCK TABLES `variables` WRITE;
-/*!40000 ALTER TABLE `variables` DISABLE KEYS */;
-INSERT INTO `variables` VALUES (5,2,'CONFIGURATION_DATABASE_PASSWORD','eMonster'),(7,3,'CONFIGURATION_DATABASE_PASSWORD','eMonster');
-/*!40000 ALTER TABLE `variables` ENABLE KEYS */;
+LOCK TABLES `variable_mappings` WRITE;
+/*!40000 ALTER TABLE `variable_mappings` DISABLE KEYS */;
+/*!40000 ALTER TABLE `variable_mappings` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -131,4 +211,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-10-03 16:15:23
+-- Dump completed on 2017-10-17 15:47:15
