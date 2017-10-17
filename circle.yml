@@ -1,32 +1,24 @@
 machine:
+    pre:
+        - printenv > /tmp/environment-variables-circle
     services:
         - docker
-    environment:
-        GOROOT: ""
-        GOPATH: "${HOME}/.go_project"
-        PATH: "${GOPATH}/bin:${PATH}"
-        BUILD_PATH: "${GOPATH}/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}"
 
 dependencies:
     pre:
         - rm -rf ~/.go_workspace
-        - go get -u github.com/FiloSottile/gvt
-    override:
-        - mkdir -p ~/.go_project/src/github.com/${CIRCLE_PROJECT_USERNAME}
-        - ln -s ${HOME}/${CIRCLE_PROJECT_REPONAME} ${HOME}/.go_project/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
-        - cd ~/.go_project/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
-        - go get -d -v
-
-compile:
-    override:
-        - cd $BUILD_PATH && go build -v
 
 test:
     override:
-        - cd $BUILD_PATH && go test -v -race $(go list ./... | grep -v /vendor/)
+        - go test -v -race $(go list ./... | grep -v /vendor/)
 
 deployment:
-    commands:
-        - docker build -t byuoitav/${CIRCLE_PROJECT_REPONAME} .
-        - docker login -e $DOCKER_EMAIL -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-        - docker push byuoitav/${CIRCLE_PROJECT_REPONAME}
+    production:
+        branch: master
+        commands:
+            - docker build -t byuoitav/pi-designation-microservice:$CIRCLE_SHA1 .
+            - docker build -t byuoitav/pi-designation-microservice:latest .
+            - docker login -e $DOCKER_EMAIL -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+            - docker push byuoitav/pi-designation-microservice:$CIRCLE_SHA1
+            - docker push byuoitav/pi-designation-microservice:latest
+            - ./deploy.sh $CIRCLE_PROJECT_REPONAME $CIRCLE_SHA1

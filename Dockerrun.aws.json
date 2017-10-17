@@ -5,7 +5,7 @@
         "Key": ".dockercfg"
     },
     "Image": {
-        "Name": "byuoitav/pi-designation-microservice",
+        "Name": "byuoitav/pi-designation-microservice:latest",
         "Update": "true"
     },
     "Ports": [{
