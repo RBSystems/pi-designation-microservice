@@ -11,11 +11,9 @@ import (
 	"github.com/fatih/color"
 )
 
-func GetEnv(hostname string) (Device, error) {
+func GetEnv(hostname string) (AvControlDevice, error) {
 
-	log.Printf("[dbo] getting environment variables of hostname: %s", hostname)
-
-	return Device{}, nil
+	return AvControlDevice{}, nil
 }
 
 func GetUi(hostname string) (string, error) {

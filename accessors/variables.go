@@ -10,13 +10,6 @@ import (
 	"github.com/fatih/color"
 )
 
-type Variable struct {
-	Key   string      `json:"key"`
-	Value string      `json:"value"`
-	Desig Designation `json:"designation"`
-	ID    int         `json:"id",omitempty`
-}
-
 func ValidateVar(variable Variable) error {
 
 	log.Printf("[accessors] validating variable: %s", variable.Key)

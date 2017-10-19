@@ -30,10 +30,10 @@ func main() {
 	secure.GET("/variables/:designation", handlers.GetVarsByDesignation)
 	secure.GET("/variables/all", handlers.GetAllVariables)
 
-	//add info
-	secure.POST("/rooms/add/:room/:designation", handlers.AddNewRoom)
+	secure.POST("/rooms/add", handlers.AddNewRoom)
 	secure.POST("/variables/add", handlers.AddVariable)
-	secure.POST("/designations/add/:definition", handlers.AddDesignation)
+	secure.POST("/designations/add", handlers.AddDesignation)
+	secure.POST("/microservices/add", handlers.AddMicroservice)
 
 	//edit info
 	secure.PUT("/variables/edit/:key", handlers.EditVariable)
