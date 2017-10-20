@@ -7,8 +7,7 @@ import (
 	"sync"
 
 	_ "github.com/go-sql-driver/mysql" // Blank import due to its use as a driver
-
-	"github.com/fatih/color"
+	"github.com/jmoiron/sqlx"
 )
 
 /** lock things down here **/
@@ -30,10 +29,7 @@ func DB() *sql.DB {
 
 		var err error
 
-		db, err = sql.Open("mysql", data)
-		if err != nil {
-			log.Panicf("%s", color.HiRedString("[dbo] unable to open database: %s", err.Error()))
-		}
+		db = sqlx.MustOpen("mysql", data)
 	})
 
 	return db

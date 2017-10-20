@@ -74,20 +74,3 @@ func GetRoomByName(name string) (Room, error) {
 
 	return output, nil
 }
-
-//func ValidateDesignation(desig Designation) error {
-//
-//	log.Printf("[accessors] validating designation... %s", desig)
-//
-//	return nil
-//}
-//
-//func ValidateRoom(room Room) error {
-//
-//	log.Printf("[accessors] validating room...")
-//
-//	if (desig.Name == nil) || (desig.ID == nil) {
-//		return errors.New("invalid designation")
-//	}
-//
-//}

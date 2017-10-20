@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -57,47 +56,5 @@ func AddNewDevice(context echo.Context) error {
 
 func AddNewRoom(context echo.Context) error {
 
-	name := context.Param("room")
-	log.Printf("[handlers] adding new room: %s", name)
-
-	//make sure room is not already represented
-	//this should error out - because the room shouldn't be there
-	room, findErr := accessors.GetRoomByName(name)
-	if findErr == nil {
-		msg := "room already in database"
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
-	}
-
-	err := context.Bind(&room)
-	if err != nil {
-		msg := fmt.Sprintf("unable to unmarshal JSON object: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
-	}
-
-	//validate room designation
-	//this should not error out - the designation should already be there
-	_, err = accessors.GetDesignationByName(room.Desig.Name)
-	if err != nil {
-		msg := fmt.Sprintf("unable to validate room designation: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
-	}
-
-	err = accessors.AddNewRoom(room)
-	if err != nil {
-		msg := fmt.Sprintf("unable to add new room: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusInternalServerError, msg)
-	}
-
-	room, err = accessors.GetRoomByName(room.Name)
-	if err != nil {
-		msg := fmt.Sprintf("unable retrieve new room: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusInternalServerError, msg)
-	}
-
-	return context.JSON(http.StatusOK, room)
+	return nil
 }

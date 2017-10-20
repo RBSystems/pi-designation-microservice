@@ -33,7 +33,8 @@ func main() {
 	secure.POST("/rooms/add", handlers.AddNewRoom)
 	secure.POST("/variables/add", handlers.AddVariable)
 	secure.POST("/designations/add", handlers.AddDesignation)
-	secure.POST("/microservices/add", handlers.AddMicroservice)
+	secure.POST("/microservices/definitions/add", handlers.AddMicroserviceDefinition)
+	secure.POST("/microservices/mappings/add", handlers.AddMicroserviceMapping)
 
 	//edit info
 	secure.PUT("/variables/edit/:key", handlers.EditVariable)

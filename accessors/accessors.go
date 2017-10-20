@@ -27,9 +27,10 @@ type Class struct {
 //this guy basically holds a YAML blob
 //TODO elegant way to parse YAML
 type MicroserviceDefinition struct {
-	ID   int64  `json:"id"`
-	Name string `json:"name"`
-	YAML string `json:"yaml"`
+	ID          int64  `json:"id"`
+	Name        string `json:"name"`
+	YAML        string `json:"yaml"`
+	Description string `json:"description"`
 }
 
 //represents a complete, deployable microservice

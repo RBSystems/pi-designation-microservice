@@ -10,7 +10,9 @@ import (
 	"github.com/labstack/echo"
 )
 
-func AddVariable(context echo.Context) error {
+//relies on MySQL for most logic
+//e.g. foreign keys, duplicates, etc
+func AddVariableMapping(context echo.Context) error {
 
 	//bind context
 	var variable ac.Variable
@@ -23,14 +25,6 @@ func AddVariable(context echo.Context) error {
 
 	log.Printf("[handlers] handling request to add variable: %s", variable.Key)
 
-	//validate key and value
-	err = ac.ValidateVar(variable)
-	if err != nil {
-		msg := fmt.Sprintf("invalid variable: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
-	}
-
 	//validate designation
 	variable.Desig, err = ac.GetDesignationByName(variable.Desig.Name)
 	if err != nil {
@@ -38,14 +32,6 @@ func AddVariable(context echo.Context) error {
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
 		return context.JSON(http.StatusBadRequest, msg)
 	}
-
-	//make sure it's not already there, this should error out because the variable isn't there
-	//	exists := ac.FillVariable(&variable)
-	//	if exists == nil {
-	//		msg := fmt.Sprintf("variable: %s already present in database", variable.Key)
-	//		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-	//		return context.JSON(http.StatusBadRequest, msg)
-	//	}
 
 	//add variable
 	err = ac.AddNewVariable(variable)
