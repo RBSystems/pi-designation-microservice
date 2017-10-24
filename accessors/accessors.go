@@ -1,5 +1,7 @@
 package accessors
 
+//code resuse
+
 //represents a complete room
 type Room struct {
 	Vars   []Variable  `json:"vars"`
@@ -11,15 +13,16 @@ type Room struct {
 
 //represents a designation, e.g development, stage or production
 type Designation struct {
-	Name string `json:"definition"`
-	ID   int64  `json:"id"`
+	ID          int64  `json:"id" db:"id"`
+	Name        string `json:"name" db:"name"`
+	Description string `json:"description" db:"description"`
 }
 
 //represents a device purpose, e.g AV Control, scheduling, or lighting
 type Class struct {
-	ID          int64  `json:"id"`
-	Name        string `json:"name"`
-	Description string `json:"description"`
+	ID          int64  `json:"id" db:"id"`
+	Name        string `json:"name" db:"name"`
+	Description string `json:"description" db:"description"`
 }
 
 //represents a microservice
@@ -27,27 +30,41 @@ type Class struct {
 //this guy basically holds a YAML blob
 //TODO elegant way to parse YAML
 type MicroserviceDefinition struct {
-	ID          int64  `json:"id"`
-	Name        string `json:"name"`
-	YAML        string `json:"yaml"`
-	Description string `json:"description"`
+	ID          int64  `json:"id" db:"id"`
+	Name        string `json:"name" db:"name"`
+	Description string `json:"description" db:"description"`
 }
 
 //represents a complete, deployable microservice
 type Microservice struct {
-	ID           int64                  `json:"id"`
-	Microservice MicroserviceDefinition `json:"microservice"`
-	Class        Class                  `json:"class"`
-	Designation  Designation            `json:"designation"`
+	ID           int64                  `json:"id" db:"id"`
+	Microservice MicroserviceDefinition `json:"microservice" db:"microservice"`
+	Class        Class                  `json:"class" db:"class"`
+	Designation  Designation            `json:"designation" db:"designation"`
+	YAML         string                 `json:"yaml" db:"yaml"`
+}
+
+//bind new variable mappings to this
+type VariableBatch struct {
+	Name    string              `json:"name"`
+	Classes map[string][]string `json:"classes"` //maps a class to a list of designations
+	Value   string              `json:"value"`
+}
+
+//defines a variable
+type VariableDefinition struct {
+	ID          int64  `json:"id" db:"id"`
+	Name        string `json:"name" db:"name"`
+	Description string `json:"description" db:"description"`
 }
 
 //represents a complete, deployable environment variable
 type Variable struct {
-	Key   string      `json:"key"`
-	Value string      `json:"value"`
-	Desig Designation `json:"designation"`
-	Class Class       `json:"class"`
-	ID    int         `json:"id",omitempty`
+	ID          int64              `json:"id" db:"id"`
+	Value       string             `json:"value" db:"value"`
+	Class       Class              `json:"class" db:"class"`
+	Designation Designation        `json:"designation" db:"designation"`
+	Variable    VariableDefinition `json:"name" db:"name"`
 }
 
 type RoomConfig struct {

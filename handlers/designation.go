@@ -10,18 +10,26 @@ import (
 	"github.com/labstack/echo"
 )
 
-func AddDesignation(context echo.Context) error {
+func AddDesignationDefinition(context echo.Context) error {
 
-	definition := context.Param("definition")
-	log.Printf("[handlers] adding new desigation definition: %s", definition)
+	log.Printf("[handlers] adding new desigation definition")
 
-	designation := ac.Designation{Name: definition}
-	err := ac.AddDesignation(&designation)
+	var designation ac.Designation
+	err := context.Bind(&designation)
 	if err != nil {
-		msg := fmt.Sprintf("designation not added to database: %s", err.Error())
+		msg := fmt.Sprintf("unable to bind JSON to struct %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
 		return context.JSON(http.StatusInternalServerError, msg)
 	}
+
+	err = ac.AddDesignationDefinition(&designation)
+	if err != nil {
+		msg := fmt.Sprintf("error adding designation: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusInternalServerError, msg)
+	}
+
+	log.Printf("%s", color.HiGreenString("[handlers] successfully added desigation: %s", designation.Name))
 
 	return context.JSON(http.StatusOK, designation)
 }

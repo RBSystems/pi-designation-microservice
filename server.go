@@ -23,25 +23,12 @@ func main() {
 
 	secure := router.Group("", echo.WrapMiddleware(authmiddleware.Authenticate))
 
-	//get info
-	secure.GET("/rooms/:room/env", handlers.GetEnvironmentVariables)
-	secure.GET("/rooms/:room/uiconfig", handlers.GetUiConfig)
-	secure.GET("/variables/:key/:designation", handlers.GetVariable)
-	secure.GET("/variables/:designation", handlers.GetVarsByDesignation)
-	secure.GET("/variables/all", handlers.GetAllVariables)
-
-	secure.POST("/rooms/add", handlers.AddNewRoom)
-	secure.POST("/variables/add", handlers.AddVariable)
-	secure.POST("/designations/add", handlers.AddDesignation)
+	secure.POST("/designations/definitions/add", handlers.AddDesignationDefinition)
+	secure.POST("/classes/definitions/add", handlers.AddClassDefinition)
 	secure.POST("/microservices/definitions/add", handlers.AddMicroserviceDefinition)
 	secure.POST("/microservices/mappings/add", handlers.AddMicroserviceMapping)
-
-	//edit info
-	secure.PUT("/variables/edit/:key", handlers.EditVariable)
-
-	//delete info
-	secure.DELETE("/variables/delete/:key/:designation", handlers.DeleteVariable)
-	secure.DELETE("/designations/delete/:designation", handlers.DeleteDesignation)
+	secure.POST("/variables/definitions/add", handlers.AddVariableDefinition)
+	secure.POST("/variables/mappings/add", handlers.AddVariableMappings)
 
 	server := http.Server{
 		Addr:           PORT,

@@ -12,172 +12,46 @@ import (
 
 //relies on MySQL for most logic
 //e.g. foreign keys, duplicates, etc
-func AddVariableMapping(context echo.Context) error {
+func AddVariableMappings(context echo.Context) error {
 
-	//bind context
-	var variable ac.Variable
+	log.Printf("[handlers] binding new variable mapping...")
+
+	var mappings ac.VariableBatch
+	err := context.Bind(&mappings)
+	if err != nil {
+		msg := fmt.Sprintf("unable to bind JSON to struct: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	lastInserted, err := ac.AddVariableMappings(&mappings)
+	if err != nil {
+		msg := fmt.Sprintf("variables not added: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	return context.JSON(http.StatusOK, lastInserted)
+}
+
+func AddVariableDefinition(context echo.Context) error {
+
+	log.Printf("[handlers] binding new variable definition...")
+
+	var variable ac.VariableDefinition
 	err := context.Bind(&variable)
 	if err != nil {
-		msg := fmt.Sprintf("unable to bind context: %s", err.Error())
+		msg := fmt.Sprintf("unable to bind JSON to struct: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
 		return context.JSON(http.StatusBadRequest, msg)
 	}
 
-	log.Printf("[handlers] handling request to add variable: %s", variable.Key)
-
-	//validate designation
-	variable.Desig, err = ac.GetDesignationByName(variable.Desig.Name)
+	err = ac.AddVariableDefinition(&variable)
 	if err != nil {
-		msg := fmt.Sprintf("invalid designation: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
-	}
-
-	//add variable
-	err = ac.AddNewVariable(variable)
-	if err != nil {
-		msg := fmt.Sprintf("unable to add new variable: %s: %s", variable.Key, err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusInternalServerError, msg)
-	}
-
-	return context.JSON(http.StatusOK, variable)
-}
-
-func GetVariable(context echo.Context) error {
-
-	designation := context.Param("designation")
-	key := context.Param("key")
-	log.Printf("[handlers] getting %s value of %s", designation, key)
-
-	//validate designation
-	desig, err := ac.GetDesignationByName(designation)
-	if err != nil {
-		msg := fmt.Sprintf("%s designation not found: %s", designation, err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
-	}
-
-	//build variable
-	variable := ac.Variable{
-		Key:   key,
-		Desig: desig,
-	}
-
-	//fill variable
-	err = ac.FillVariable(&variable)
-	if err != nil {
-		msg := fmt.Sprintf("unable to get variable data: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusInternalServerError, msg)
-	}
-
-	return context.JSON(http.StatusOK, variable)
-
-}
-
-func EditVariable(context echo.Context) error {
-
-	log.Printf("[handlers] updating variable: %s", context.Param("key"))
-
-	//bind context
-	var variable ac.Variable
-	err := context.Bind(&variable)
-	if err != nil {
-		msg := fmt.Sprintf("unable to bind context: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
-	}
-
-	//validate
-	err = ac.ValidateVar(variable)
-	if err != nil {
-		msg := fmt.Sprintf("invalid variable: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
-	}
-
-	//fill designation
-	variable.Desig, err = ac.GetDesignationByName(variable.Desig.Name)
-	if err != nil {
-		msg := fmt.Sprintf("invalid designation: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
-	}
-
-	//make edit
-	err = ac.EditVariable(variable)
-	if err != nil {
-		msg := fmt.Sprintf("unable to edit variable: %s", err.Error())
+		msg := fmt.Sprintf("variable not added: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
 		return context.JSON(http.StatusBadRequest, msg)
 	}
 
 	return context.JSON(http.StatusOK, variable)
-}
-
-func DeleteVariable(context echo.Context) error {
-
-	key := context.Param("key")
-	desig := context.Param("designation")
-	log.Printf("[handlers] deleting %s-designated variable %s", key, desig)
-
-	designation, err := ac.GetDesignationByName(desig)
-	if err != nil {
-		msg := fmt.Sprintf("invalid designation: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
-	}
-
-	variable := ac.Variable{
-		Key:   key,
-		Desig: designation,
-	}
-
-	err = ac.DeleteVariable(variable)
-	if err != nil {
-		msg := fmt.Sprintf("variable not deleted: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
-	}
-
-	return context.JSON(http.StatusOK, "success")
-}
-
-func GetAllVariables(context echo.Context) error {
-
-	log.Printf("[handlers] getting all variables...")
-
-	vars, err := ac.GetAllVariables()
-	if err != nil {
-		msg := fmt.Sprintf("variables not found: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusInternalServerError, msg)
-	}
-
-	return context.JSON(http.StatusOK, vars)
-}
-
-func GetVarsByDesignation(context echo.Context) error {
-
-	designation := context.Param("designation")
-	log.Printf("[hanlders] getting all variables corresponding to designation: %s", designation)
-
-	//build designation
-	desig, err := ac.GetDesignationByName(designation)
-	if err != nil {
-		msg := fmt.Sprintf("designation %s not found: %s", designation, err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
-	}
-
-	//get vars by designation
-	vars, err := ac.GetVariablesByDesignation(desig)
-	if err != nil {
-		msg := fmt.Sprintf("variables not found: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
-	}
-
-	return context.JSON(http.StatusOK, vars)
 }
