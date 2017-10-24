@@ -61,7 +61,7 @@ type VariableDefinition struct {
 //represents a complete, deployable environment variable
 type Variable struct {
 	ID          int64              `json:"id" db:"id"`
-	Value       string             `json:"value" db:"value"`
+	Value       string             `json:"value"`
 	Class       Class              `json:"class" db:"class"`
 	Designation Designation        `json:"designation" db:"designation"`
 	Variable    VariableDefinition `json:"name" db:"name"`

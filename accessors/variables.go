@@ -52,38 +52,75 @@ func AddVariableMappings(mappings *VariableBatch) ([]Variable, error) {
 	}
 
 	var lastInserted []Variable
-
-	raw := "INSERT INTO variable_mappings (variable_id, designation_id, class_id, value) SELECT variable_definitions.id as 'variable', designation_definitions.id as 'designation', class_definitions.id as 'class', :value as 'value' FROM variable_definitions  JOIN designation_definitions on designation_definitions.name=:designation JOIN class_definitions on class_definitions.name=:class  WHERE variable_definitions.name=:name"
+	var desig Designation
+	var classDef Class
+	var def VariableDefinition
 
 	//address each class
 	for class, designations := range mappings.Classes {
 
 		for _, designation := range designations {
 
-			result, err := tx.NamedExec(raw, map[string]interface{}{
-				"name":        mappings.Name,
-				"value":       mappings.Value,
-				"class":       class,
-				"designation": designation,
-			})
+			//get class definiton
+			err = db.DB().Get(&classDef, "SELECT * FROM class_definitions WHERE name = ?", class)
 			if err != nil {
-				msg := fmt.Sprintf("invalid named statement: %s", err.Error())
+				msg := fmt.Sprintf("class not found: %s", err.Error())
 				log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+				log.Printf("%s", color.HiRedString("[accessors] rolling back transaction..."))
+				tx.Rollback()
+				return []Variable{}, errors.New(msg)
+			}
+
+			err = db.DB().Get(&desig, "SELECT * FROM designation_definitions WHERE name = ?", designation)
+			if err != nil {
+				msg := fmt.Sprintf("designation not found: %s", err.Error())
+				log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+				log.Printf("%s", color.HiRedString("[accessors] rolling back transaction..."))
+				tx.Rollback()
+				return []Variable{}, errors.New(msg)
+			}
+
+			err = db.DB().Get(&def, "SELECT * FROM variable_definitions WHERE name = ?", mappings.Name)
+			if err != nil {
+				msg := fmt.Sprintf("variable definition not found: %s", err.Error())
+				log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+				log.Printf("%s", color.HiRedString("[accessors] rolling back transaction..."))
+				tx.Rollback()
+				return []Variable{}, errors.New(msg)
+			}
+
+			result, err := tx.NamedExec("INSERT INTO variable_mappings (value, designation_id, class_id, variable_id) VALUES (:value, :designation, :class, :variable)",
+				map[string]interface{}{
+					"value":       mappings.Value,
+					"designation": desig.ID,
+					"class":       classDef.ID,
+					"variable":    def.ID,
+				})
+			if err != nil {
+				msg := fmt.Sprintf("failed to add entry: %s", err.Error())
+				log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+				log.Printf("%s", color.HiRedString("[accessors] rolling back transaction..."))
 				tx.Rollback()
 				return []Variable{}, errors.New(msg)
 			}
 
 			id, err := result.LastInsertId()
-			if err != nil { //if it only errors out here, well...
-				msg := fmt.Sprintf("last inserted ID not found: %s", err.Error())
+			if err != nil {
+				msg := fmt.Sprintf("variable ID not found: %s", err.Error())
 				log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+				log.Printf("%s", color.HiRedString("[accessors] rolling back transaction..."))
+				tx.Rollback()
 				return []Variable{}, errors.New(msg)
 			}
 
 			lastInserted = append(lastInserted, Variable{
-				ID:    id,
-				Value: mappings.Value,
+				ID:          id,
+				Variable:    def,
+				Value:       mappings.Value,
+				Class:       classDef,
+				Designation: desig,
 			})
+
 		}
 	}
 
