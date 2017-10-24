@@ -51,6 +51,12 @@ type VariableBatch struct {
 	Value   string              `json:"value"`
 }
 
+type MicroserviceBatch struct {
+	Name    string              `json:"name"`
+	Classes map[string][]string `json:"classes"`
+	YAML    string              `json:"yaml"`
+}
+
 //defines a variable
 type VariableDefinition struct {
 	ID          int64  `json:"id" db:"id"`

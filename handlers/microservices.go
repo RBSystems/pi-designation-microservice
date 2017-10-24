@@ -34,9 +34,24 @@ func AddMicroserviceDefinition(context echo.Context) error {
 	return context.JSON(http.StatusOK, microservice)
 }
 
-func AddMicroserviceMapping(context echo.Context) error {
+func AddMicroserviceMappings(context echo.Context) error {
 
 	log.Printf("[handlers] unmarshalling new microservice mappping...")
 
-	return nil
+	var mappings ac.MicroserviceBatch
+	err := context.Bind(&mappings)
+	if err != nil {
+		msg := fmt.Sprintf("unable to bind JSON to struct: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	lastInserted, err := ac.AddMicroserviceMappings(&mappings)
+	if err != nil {
+		msg := fmt.Sprintf("variables not added: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	return context.JSON(http.StatusOK, lastInserted)
 }
