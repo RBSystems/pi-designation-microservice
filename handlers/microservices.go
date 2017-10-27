@@ -10,11 +10,14 @@ import (
 	"github.com/labstack/echo"
 )
 
+const MICRO = "microservice_definitions"
+const MMAP = "microservice_mappings"
+
 func AddMicroserviceDefinition(context echo.Context) error {
 
 	log.Printf("[handlers] binding new microservice definition...")
 
-	var microservice ac.MicroserviceDefinition
+	var microservice ac.Definition
 	err := context.Bind(&microservice)
 	if err != nil {
 		msg := fmt.Sprintf("unable to JSON to struct", err.Error())
@@ -22,7 +25,7 @@ func AddMicroserviceDefinition(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, msg)
 	}
 
-	err = ac.AddMicroserviceDefinition(&microservice)
+	err = ac.AddDefinition(MICRO, &microservice)
 	if err != nil {
 		msg := fmt.Sprintf("unable to add microservice %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
@@ -36,9 +39,9 @@ func AddMicroserviceDefinition(context echo.Context) error {
 
 func AddMicroserviceMappings(context echo.Context) error {
 
-	log.Printf("[handlers] unmarshalling new microservice mappping...")
+	log.Printf("[handlers] binding new microservice mapppings...")
 
-	var mappings ac.MicroserviceBatch
+	var mappings ac.Batch
 	err := context.Bind(&mappings)
 	if err != nil {
 		msg := fmt.Sprintf("unable to bind JSON to struct: %s", err.Error())
@@ -46,7 +49,7 @@ func AddMicroserviceMappings(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, msg)
 	}
 
-	lastInserted, err := ac.AddMicroserviceMappings(&mappings)
+	lastInserted, err := ac.AddMappings(MICRO, MMAP, &mappings)
 	if err != nil {
 		msg := fmt.Sprintf("variables not added: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))

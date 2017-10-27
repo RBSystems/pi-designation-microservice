@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/byuoitav/pi-designation-microservice/database"
+	db "github.com/byuoitav/pi-designation-microservice/database"
 	"github.com/fatih/color"
 )
 
@@ -20,7 +20,7 @@ func AddClassDefinition(class *Class) error {
 	log.Printf("[accessors] adding new class definition: %s", class.Name)
 
 	classDef := "INSERT INTO class_definitions (name, description) VALUES (?, ?)"
-	result, err := database.DB().Exec(classDef, class.Name, class.Description)
+	result, err := db.DB().Exec(classDef, class.Name, class.Description)
 	if err != nil {
 		msg := fmt.Sprintf("class not added: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[accessors] %s", msg))

@@ -40,7 +40,7 @@ func AddMicroserviceMappings(mappings *MicroserviceBatch) ([]Microservice, error
 	log.Printf("[accessors] adding new microservice mappings...")
 
 	if len(mappings.YAML) == 0 {
-		msg := "invalid variable value"
+		msg := "invalid YAML content"
 		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
 		return []Microservice{}, errors.New(msg)
 	}
@@ -91,12 +91,12 @@ func AddMicroserviceMappings(mappings *MicroserviceBatch) ([]Microservice, error
 				return []Microservice{}, errors.New(msg)
 			}
 
-			result, err := tx.NamedExec("INSERT INTO microservice_mappings (value, designation_id, class_id, microservice_id) VALUES (:value, :designation, :class, :yaml)",
+			result, err := tx.NamedExec("INSERT INTO microservice_mappings (yaml, designation_id, class_id, microservice_id) VALUES (:yaml, :designation, :class, :microservice)",
 				map[string]interface{}{
-					"value":       mappings.YAML,
-					"designation": desig.ID,
-					"class":       classDef.ID,
-					"yaml":        def.ID,
+					"yaml":         mappings.YAML,
+					"designation":  desig.ID,
+					"class":        classDef.ID,
+					"microservice": def.ID,
 				})
 			if err != nil {
 				msg := fmt.Sprintf("failed to add entry: %s", err.Error())

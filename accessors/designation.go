@@ -9,21 +9,6 @@ import (
 	"github.com/fatih/color"
 )
 
-func GetDesignationById(ID int64) (designation Designation, err error) {
-
-	log.Printf("[accessors] getting room designation by id: %v...", ID)
-
-	err = db.DB().QueryRow(`SELECT * from designation_definition where designation_ID = ?`, ID).Scan(&designation.Name, &designation.ID)
-	if err != nil {
-		msg := fmt.Sprintf("problem with query: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-		err = errors.New(msg)
-		return
-	}
-
-	return
-}
-
 func GetDesignationByName(name string) (Designation, error) {
 
 	log.Printf("[accessors] getting room designation by name: %s...", name)
@@ -101,7 +86,7 @@ func AddDesignationDefinition(designation *Designation) error {
 	return nil
 }
 
-func DeleteDesignation(designation Designation) error {
+func DeleteDesignation(designation *Designation) error {
 
 	log.Printf("[accessors] removing room desigation %s", designation.Name)
 
@@ -115,9 +100,50 @@ func DeleteDesignation(designation Designation) error {
 	return nil
 }
 
-func UpdateDesignation(new, old Designation) error {
+func EditDesignationDefinition(old, new *Designation) error {
 
-	log.Printf("[accessors] updating room designation %s", old.Name)
+	log.Printf("[handlers] updating designation definition...")
+
+	if len(new.Name) == 0 {
+		msg := "invalid designation name"
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return errors.New(msg)
+	}
+
+	if len(new.Description) == 0 {
+		msg := "invalid description"
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return errors.New(msg)
+	}
+
+	result, err := db.DB().Exec("UPDATE designation_definitions SET name=?, description=? WHERE name=?", new.Name, new.Description, old.Name)
+	if err != nil {
+		msg := fmt.Sprintf("unable to update designation: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return errors.New(msg)
+	}
+
+	numRows, err := result.RowsAffected()
+	if err != nil {
+		msg := fmt.Sprintf("ID not found: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return errors.New(msg)
+	}
+
+	if numRows < 1 {
+		msg := "designation definition to edit not found."
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return errors.New(msg)
+	}
+
+	id, err := result.LastInsertId()
+	if err != nil {
+		msg := fmt.Sprintf("ID not found: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return errors.New(msg)
+	}
+
+	new.ID = id
 
 	return nil
 }

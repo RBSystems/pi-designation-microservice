@@ -10,13 +10,16 @@ import (
 	"github.com/labstack/echo"
 )
 
+const VAR = "variable_definitions"
+const VMAP = "variable_mappings"
+
 //relies on MySQL for most logic
 //e.g. foreign keys, duplicates, etc
 func AddVariableMappings(context echo.Context) error {
 
 	log.Printf("[handlers] binding new variable mapping...")
 
-	var mappings ac.VariableBatch
+	var mappings ac.Batch
 	err := context.Bind(&mappings)
 	if err != nil {
 		msg := fmt.Sprintf("unable to bind JSON to struct: %s", err.Error())
@@ -24,7 +27,7 @@ func AddVariableMappings(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, msg)
 	}
 
-	lastInserted, err := ac.AddVariableMappings(&mappings)
+	lastInserted, err := ac.AddMappings(VAR, VMAP, &mappings)
 	if err != nil {
 		msg := fmt.Sprintf("variables not added: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
@@ -38,7 +41,7 @@ func AddVariableDefinition(context echo.Context) error {
 
 	log.Printf("[handlers] binding new variable definition...")
 
-	var variable ac.VariableDefinition
+	var variable ac.Definition
 	err := context.Bind(&variable)
 	if err != nil {
 		msg := fmt.Sprintf("unable to bind JSON to struct: %s", err.Error())
@@ -46,9 +49,9 @@ func AddVariableDefinition(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, msg)
 	}
 
-	err = ac.AddVariableDefinition(&variable)
+	err = ac.AddDefinition(VAR, &variable)
 	if err != nil {
-		msg := fmt.Sprintf("variable not added: %s", err.Error())
+		msg := fmt.Sprintf("variable definition not added: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
 		return context.JSON(http.StatusBadRequest, msg)
 	}

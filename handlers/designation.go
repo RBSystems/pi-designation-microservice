@@ -10,19 +10,21 @@ import (
 	"github.com/labstack/echo"
 )
 
+const desig = "designation_definitions"
+
 func AddDesignationDefinition(context echo.Context) error {
 
 	log.Printf("[handlers] adding new desigation definition")
 
-	var designation ac.Designation
+	var designation ac.Definition
 	err := context.Bind(&designation)
 	if err != nil {
-		msg := fmt.Sprintf("unable to bind JSON to struct %s", err.Error())
+		msg := fmt.Sprintf("unable to bind JSON to struct: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
 		return context.JSON(http.StatusInternalServerError, msg)
 	}
 
-	err = ac.AddDesignationDefinition(&designation)
+	err = ac.AddDefinition(desig, &designation)
 	if err != nil {
 		msg := fmt.Sprintf("error adding designation: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
@@ -34,19 +36,23 @@ func AddDesignationDefinition(context echo.Context) error {
 	return context.JSON(http.StatusOK, designation)
 }
 
-//this will cause a cascading delete
-//be careful doing this
-func DeleteDesignation(context echo.Context) error {
+func EditDesignationDefinition(context echo.Context) error {
 
-	desig := context.Param("designation")
-	log.Printf("[handlers] removing designation definition")
+	log.Printf("[handlers] editing designation definition")
 
-	designation := ac.Designation{Name: desig}
-	err := ac.DeleteDesignation(designation)
+	var designation ac.Definition
+	err := context.Bind(&designation)
 	if err != nil {
-		msg := fmt.Sprintf("designation not removed: %s", err.Error())
+		msg := fmt.Sprintf("unable to bind JSON to struct %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusInternalServerError, msg)
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	err = ac.EditDefinition(desig, &designation)
+	if err != nil {
+		msg := fmt.Sprintf("entry not updated: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
 	}
 
 	return context.JSON(http.StatusOK, designation)
