@@ -9,12 +9,6 @@ import (
 	"github.com/fatih/color"
 )
 
-type Definition struct {
-	ID          int64  `json:"id" db:"id"`
-	Name        string `json:"name" db:"name"`
-	Description string `json:"description" db:"name"`
-}
-
 func AddDefinition(table string, def *Definition) error {
 
 	log.Printf("[accessors] adding definition to %s...", table)
@@ -82,7 +76,7 @@ func EditDefinition(table string, def *Definition) error {
 	}
 
 	if numRows < 1 {
-		msg := fmt.Sprintf("definition in %s to edit not found.", table)
+		msg := "invalid edit"
 		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
 		return errors.New(msg)
 	}

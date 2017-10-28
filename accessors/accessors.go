@@ -1,109 +1,73 @@
 package accessors
 
-//code resuse
-
-//represents a complete room
-type Room struct {
-	Vars   []Variable  `json:"vars"`
-	Name   string      `json:"roomname"`
-	ID     int         `json:"id"`
-	Config RoomConfig  `json:"config"`
-	Desig  Designation `json:"designation"`
+//allows aliasing of many mapping entries
+type Batch struct {
+	ID      int64             `json:"name"`    //uniquely identifies an entry in a table of definitions
+	Classes map[int64][]int64 `json:"classes"` //maps a class ID to a list of designation IDs
+	Value   string            `json:"value"`   //holds a value to be added to a many-to-many table
 }
 
-//represents a designation, e.g development, stage or production
-type Designation struct {
-	ID          int64  `json:"id" db:"id"`
+//common pieces of any mapping
+type Mapping struct {
+	ID          int64       `json:"id"`
+	Class       Class       `json:"class"`       //classes, e.g. av-control, scheduling, etc.
+	Designation Designation `json:"designation"` //designations exist inside classes
+}
+
+//represents a complete microservice
+type MicroserviceMapping struct {
+	Mapping
+	Microservice Microservice `json:"microservice"`
+	YAML         string       `json:"yaml" db:"yaml"`
+}
+
+//represents a complete variable
+type VariableMapping struct {
+	Mapping
+	Variable Variable `json:"variable"`
+	Value    string   `json:"value" db:"yaml"`
+}
+
+//common pieces of a mapping - types match DB
+type DBMapping struct {
+	ID      int64 `db:"id"`
+	ClassID int64 `db:"class_id"`
+	DesigID int64 `db:"designation_id"`
+}
+
+//row in variable mapping table of DB
+type DBVariable struct {
+	DBMapping
+	VarID int64  `db:"variable_id"`
+	Value string `db:"value"`
+}
+
+//row in microservice mapping table of DB
+type DBMicroservice struct {
+	DBMapping
+	MicroID int64  `db:"microservice_id"`
+	YAML    string `db:"yaml"`
+}
+
+//basic pieces of any definition - types match DB table
+type Definition struct {
+	ID          int64  `json"id" db:"id"`
 	Name        string `json:"name" db:"name"`
-	Description string `json:"description" db:"description"`
+	Description string `jdon:"description" db:"description"`
 }
 
-//represents a device purpose, e.g AV Control, scheduling, or lighting
-type Class struct {
-	ID          int64  `json:"id" db:"id"`
-	Name        string `json:"name" db:"name"`
-	Description string `json:"description" db:"description"`
-}
+//represents a pi function - AV control, Scheduling, etc.
+//row in class_definitions table
+type Class Definition
 
-//represents a microservice
-//defines a name and holds the docker compose information
-//this guy basically holds a YAML blob
-//TODO elegant way to parse YAML
-type MicroserviceDefinition struct {
-	ID          int64  `json:"id" db:"id"`
-	Name        string `json:"name" db:"name"`
-	Description string `json:"description" db:"description"`
-}
+//represents a code base - dev, stage, prod, etc.
+//row in designation_definitions table
+type Designation Definition
 
-//represents a complete, deployable microservice
-type Microservice struct {
-	ID           int64                  `json:"id" db:"id"`
-	Microservice MicroserviceDefinition `json:"microservice" db:"microservice"`
-	Class        Class                  `json:"class" db:"class"`
-	Designation  Designation            `json:"designation" db:"designation"`
-	YAML         string                 `json:"yaml" db:"yaml"`
-}
+//represents a Variable name
+//row in variable_definitions table
+type Variable Definition
 
-//bind new variable mappings to this
-type VariableBatch struct {
-	Name    string              `json:"name"`
-	Classes map[string][]string `json:"classes"` //maps a class to a list of designations
-	Value   string              `json:"value"`
-}
-
-type MicroserviceBatch struct {
-	Name    string              `json:"name"`
-	Classes map[string][]string `json:"classes"`
-	YAML    string              `json:"yaml"`
-}
-
-//defines a variable
-type VariableDefinition struct {
-	ID          int64  `json:"id" db:"id"`
-	Name        string `json:"name" db:"name"`
-	Description string `json:"description" db:"description"`
-}
-
-//represents a complete, deployable environment variable
-type Variable struct {
-	ID          int64              `json:"id" db:"id"`
-	Value       string             `json:"value"`
-	Class       Class              `json:"class" db:"class"`
-	Designation Designation        `json:"designation" db:"designation"`
-	Variable    VariableDefinition `json:"name" db:"name"`
-}
-
-type RoomConfig struct {
-	API       ApiConfig         `json:"apiconfig"`
-	AvDevices []AvControlDevice `json:"av-devices"`
-}
-
-type ApiConfig struct {
-	Enabled bool              `json:"enabled"`
-	Backups map[string]string `json:"backups"`
-}
-
-type AvControlDevice struct {
-	Ui       string        `json:"ui"`
-	Inputs   []Input       `json:"inputdevices"`
-	Displays []Display     `json:"displays"`
-	Audio    []AudioConfig `json:"audio"`
-	Features []string      `json:"features"`
-}
-
-type Input struct {
-	Name string `json:"name"`
-	Icon string `json:"icon"`
-}
-
-type Display struct {
-	Name         string  `json:"name"`
-	Icon         string  `json:"icon"`
-	Inputs       []Input `json:"inputs"`
-	DefaultInput Input   `json:"defaultinput"`
-}
-
-type AudioConfig struct {
-	Displays     []string `json:"displays"`
-	AudioDevices []string `json:"audiodevices"`
-}
+//represents a Microservice name
+//row in microservice_definitions table
+type Microservice Definition

@@ -12,6 +12,7 @@ import (
 
 const MICRO = "microservice_definitions"
 const MMAP = "microservice_mappings"
+const MID = "micorservice_id"
 
 func AddMicroserviceDefinition(context echo.Context) error {
 
@@ -37,6 +38,32 @@ func AddMicroserviceDefinition(context echo.Context) error {
 	return context.JSON(http.StatusOK, microservice)
 }
 
+func EditMicroserviceDefinition(context echo.Context) error {
+
+	log.Printf("[handlers] binding microservice definition...")
+
+	var microservice ac.Definition
+	err := context.Bind(&microservice)
+	if err != nil {
+		msg := fmt.Sprintf("unable to JSON to struct", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	log.Printf("[handlers] editing microservice definition...")
+
+	err = ac.EditDefinition(MICRO, &microservice)
+	if err != nil {
+		msg := fmt.Sprintf("unable to add microservice %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	log.Printf("%s", color.HiGreenString("[handlers] successuflly added new microservice: %s", microservice.Name))
+
+	return context.JSON(http.StatusOK, microservice)
+}
+
 func AddMicroserviceMappings(context echo.Context) error {
 
 	log.Printf("[handlers] binding new microservice mapppings...")
@@ -49,7 +76,7 @@ func AddMicroserviceMappings(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, msg)
 	}
 
-	lastInserted, err := ac.AddMappings(MICRO, MMAP, &mappings)
+	lastInserted, err := ac.AddMappings(MICRO, MMAP, MID, &mappings)
 	if err != nil {
 		msg := fmt.Sprintf("variables not added: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))

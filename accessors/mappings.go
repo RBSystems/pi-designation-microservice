@@ -9,26 +9,16 @@ import (
 	"github.com/fatih/color"
 )
 
-type Batch struct {
-	Name    string              `json:"name"`
-	Classes map[string][]string `json:"classes"` //maps a class to a list of designations
-	Value   string              `json:"value"`
-}
-
-type Mapping struct {
-	ID          int64      `json:"id"`
-	Type        Definition `json:"type"`        //either microservice or variable definition ...today
-	Class       Definition `json:"class"`       //classes, e.g. av-control, scheduling, etc.
-	Designation Definition `json:"designation"` //designations exist inside classes
-	Value       string     `json:"value"`       //the actual value, e.g. some YAML or an environement variable
-}
-
-func AddMappings(defTable, mapTable string, entries *Batch) ([]Mapping, error) {
+//we're assuming the user knows the IDs for everything
+//mapTable - name of table to add entries to
+//colName - name of column in table to add entries to
+//defId - name of column in table to add external ID to
+func AddMappings(mapTable, colName, defId, string, entries *Batch) error {
 
 	if len(entries.Value) == 0 {
 		msg := "invalid variable value"
 		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-		return []Mapping{}, errors.New(msg)
+		return errors.New(msg)
 	}
 
 	//we're building one giant commit
@@ -36,80 +26,18 @@ func AddMappings(defTable, mapTable string, entries *Batch) ([]Mapping, error) {
 	if err != nil {
 		msg := fmt.Sprintf("could not begin transaction: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-		return []Mapping{}, errors.New(msg)
+		return errors.New(msg)
 	}
 
-	var lastInserted []Mapping
-	var desig, classDef, typeDef Definition
-
-	//address each class
 	for class, designations := range entries.Classes {
 
 		for _, designation := range designations {
 
-			//get class definiton
-			err = tx.Get(&classDef, "SELECT * FROM class_definitions WHERE name = ?", class)
-			if err != nil {
-				msg := fmt.Sprintf("class not found: %s", err.Error())
-				log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-				log.Printf("%s", color.HiRedString("[accessors] rolling back transaction..."))
-				tx.Rollback()
-				return []Mapping{}, errors.New(msg)
-			}
-
-			err = tx.Get(&desig, "SELECT * FROM designation_definitions WHERE name = ?", designation)
-			if err != nil {
-				msg := fmt.Sprintf("designation not found: %s", err.Error())
-				log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-				log.Printf("%s", color.HiRedString("[accessors] rolling back transaction..."))
-				tx.Rollback()
-				return []Mapping{}, errors.New(msg)
-			}
-
 			//format SQL
-			command := fmt.Sprintf("SELECT * from %s WHERE name = ?", defTable)
-			err = tx.Get(&typeDef, command, entries.Name)
-			if err != nil {
-				msg := fmt.Sprintf("variable definition not found: %s", err.Error())
-				log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-				log.Printf("%s", color.HiRedString("[accessors] rolling back transaction..."))
-				tx.Rollback()
-				return []Mapping{}, errors.New(msg)
-			}
+			command := fmt.Sprintf("INSERT INTO %s (%s, designation_id, class_id, %s) VALUES (?, ?, ?, ?)", mapTable, defId, colName)
 
-			command = fmt.Sprintf("INSERT INTO %s (value, designation_id, class_id, variable_id) VALUES (:value, :designation, :class, :variable)", mapTable)
-			result, err := tx.NamedExec(command,
-				map[string]interface{}{
-					"value":       entries.Value,
-					"designation": desig.ID,
-					"class":       classDef.ID,
-					"variable":    typeDef.ID,
-				})
-			if err != nil {
-				msg := fmt.Sprintf("failed to add entry: %s", err.Error())
-				log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-				log.Printf("%s", color.HiRedString("[accessors] rolling back transaction..."))
-				tx.Rollback()
-				return []Mapping{}, errors.New(msg)
-			}
-
-			id, err := result.LastInsertId()
-			if err != nil {
-				msg := fmt.Sprintf("variable ID not found: %s", err.Error())
-				log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-				log.Printf("%s", color.HiRedString("[accessors] rolling back transaction..."))
-				tx.Rollback()
-				return []Mapping{}, errors.New(msg)
-			}
-
-			lastInserted = append(lastInserted, Mapping{
-				ID:          id,
-				Type:        typeDef,
-				Value:       entries.Value,
-				Class:       classDef,
-				Designation: desig,
-			})
-
+			log.Printf("[accessors] SQL: %s", command)
+			_, err = tx.Exec(command, entries.ID, designation, class, entries.Value)
 		}
 	}
 
@@ -117,8 +45,111 @@ func AddMappings(defTable, mapTable string, entries *Batch) ([]Mapping, error) {
 	if err != nil {
 		msg := fmt.Sprintf("unable to prepare statement: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-		return []Mapping{}, errors.New(msg)
+		return errors.New(msg)
 	}
 
-	return lastInserted, nil
+	return nil
+}
+
+func GetMicroserviceMapping(entryID int64) (MicroserviceMapping, error) {
+
+	log.Printf("[accessors] getting microservice entry...")
+
+	//get the IDs
+	var mapping DBMicroservice
+	err := db.DB().Get(&mapping, "SELECT * FROM microservice_mappings WHERE id = ?", entryID)
+	if err != nil {
+		msg := fmt.Sprintf("failed to execute query: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return MicroserviceMapping{}, errors.New(msg)
+	}
+
+	//TODO:make sure it's not the empty set
+	//does Get() take care of that?
+
+	class, desig, err := GetClassAndDesignation(mapping.ClassID, mapping.DesigID)
+	if err != nil {
+		msg := fmt.Sprintf("entry not found: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return MicroserviceMapping{}, errors.New(msg)
+	}
+
+	var microservice Microservice
+	err = db.DB().Get(&microservice, "SELECT * from microservice_definitions WHERE id = ?", mapping.MicroID)
+	if err != nil {
+		msg := fmt.Sprintf("entry not found: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return MicroserviceMapping{}, errors.New(msg)
+	}
+
+	placeHolder := Mapping{
+		ID:          mapping.ID,
+		Class:       class,
+		Designation: desig,
+	}
+
+	return MicroserviceMapping{
+		Mapping:      placeHolder,
+		Microservice: microservice,
+		YAML:         mapping.YAML,
+	}, nil
+
+}
+
+func GetVariableMapping(entryID int64) (VariableMapping, error) {
+
+	log.Printf("[accessors] getting microservice entry...")
+
+	//get the IDs
+	var mapping DBVariable
+	err := db.DB().Get(&mapping, "SELECT * FROM microservice_mappings WHERE id = ?", entryID)
+	if err != nil {
+		msg := fmt.Sprintf("failed to execute query: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return VariableMapping{}, errors.New(msg)
+	}
+
+	class, desig, err := GetClassAndDesignation(mapping.ClassID, mapping.DesigID)
+	if err != nil {
+		msg := fmt.Sprintf("entry not found: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return VariableMapping{}, errors.New(msg)
+	}
+
+	var variable Variable
+	err = db.DB().Get(&variable, "SELECT * from variable_definitions WHERE id = ?", mapping.VarID)
+	if err != nil {
+		msg := fmt.Sprintf("entry not found: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return VariableMapping{}, errors.New(msg)
+	}
+
+	placeHolder := Mapping{
+		ID:          mapping.ID,
+		Class:       class,
+		Designation: desig,
+	}
+	return VariableMapping{
+		Mapping:  placeHolder,
+		Variable: variable,
+		Value:    mapping.Value,
+	}, nil
+
+}
+
+func GetClassAndDesignation(classID, designationID int64) (class Class, designation Designation, err error) {
+
+	err = db.DB().Get(&class, "SELECT * from class_definitions WHERE id = ?", classID)
+	if err != nil {
+		err = errors.New(fmt.Sprintf("class not found: %s", err.Error()))
+		return
+	}
+
+	err = db.DB().Get(&designation, "SELECT * from designation_definitions WHERE id = ?", designationID)
+	if err != nil {
+		err = errors.New(fmt.Sprintf("designation not found: %s", err.Error()))
+		return
+	}
+
+	return
 }
