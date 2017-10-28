@@ -83,5 +83,12 @@ func AddMicroserviceMappings(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, msg)
 	}
 
-	return context.JSON(http.StatusOK, lastInserted)
+	entries, err := ac.GetMicroserviceMappings(lastInserted)
+	if err != nil {
+		msg := fmt.Sprintf("new entries not found: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusInternalServerError, msg)
+	}
+
+	return context.JSON(http.StatusOK, entries)
 }

@@ -13,21 +13,24 @@ import (
 //mapTable - name of table to add entries to
 //colName - name of column in table to add entries to
 //defId - name of column in table to add external ID to
-func AddMappings(mapTable, colName, defId, string, entries *Batch) error {
+//returns a slice of newly created IDs
+func AddMappings(mapTable, colName, defId string, entries *Batch) ([]int64, error) {
 
 	if len(entries.Value) == 0 {
-		msg := "invalid variable value"
+		msg := "invalid mapping value"
 		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-		return errors.New(msg)
+		return []int64{}, errors.New(msg)
 	}
 
 	//we're building one giant commit
 	tx, err := db.DB().Beginx()
 	if err != nil {
-		msg := fmt.Sprintf("could not begin transaction: %s", err.Error())
+		msg := fmt.Sprintf("failed to begin transaction: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-		return errors.New(msg)
+		return []int64{}, errors.New(msg)
 	}
+
+	var output []int64
 
 	for class, designations := range entries.Classes {
 
@@ -37,18 +40,57 @@ func AddMappings(mapTable, colName, defId, string, entries *Batch) error {
 			command := fmt.Sprintf("INSERT INTO %s (%s, designation_id, class_id, %s) VALUES (?, ?, ?, ?)", mapTable, defId, colName)
 
 			log.Printf("[accessors] SQL: %s", command)
-			_, err = tx.Exec(command, entries.ID, designation, class, entries.Value)
+			result, err := tx.Exec(command, entries.ID, designation, class, entries.Value)
+			if err != nil {
+				msg := fmt.Sprintf("insert action failed: %s", err.Error())
+				log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+				log.Printf("%s", color.HiRedString("[accessors] rolling back..."))
+				tx.Rollback()
+				return []int64{}, errors.New(msg)
+			}
+
+			id, err := result.LastInsertId()
+			if err != nil {
+				msg := fmt.Sprintf("last inserted ID not found: %s", err.Error())
+				log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+				log.Printf("%s", color.HiRedString("[accessors] rolling back..."))
+				tx.Rollback()
+				return []int64{}, errors.New(msg)
+			}
+
+			output = append(output, id)
+
 		}
 	}
 
 	err = tx.Commit()
 	if err != nil {
-		msg := fmt.Sprintf("unable to prepare statement: %s", err.Error())
+		msg := fmt.Sprintf("commit failed: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-		return errors.New(msg)
+		return []int64{}, errors.New(msg)
 	}
 
-	return nil
+	return output, nil
+}
+
+func GetMicroserviceMappings(IDs []int64) ([]MicroserviceMapping, error) {
+
+	log.Printf("[accessors] getting microservice entries...")
+
+	var output []MicroserviceMapping
+	for _, id := range IDs {
+
+		mapping, err := GetMicroserviceMapping(id)
+		if err != nil {
+			msg := fmt.Sprintf("entry not found: %s", err.Error())
+			log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+			return []MicroserviceMapping{}, errors.New(msg)
+		}
+
+		output = append(output, mapping)
+	}
+
+	return output, nil
 }
 
 func GetMicroserviceMapping(entryID int64) (MicroserviceMapping, error) {
@@ -96,9 +138,29 @@ func GetMicroserviceMapping(entryID int64) (MicroserviceMapping, error) {
 
 }
 
+func GetVariableMappings(IDs []int64) ([]VariableMapping, error) {
+
+	log.Printf("[accessors] getting microservice entries...")
+
+	var output []VariableMapping
+	for _, id := range IDs {
+
+		mapping, err := GetVariableMapping(id)
+		if err != nil {
+			msg := fmt.Sprintf("entry not found: %s", err.Error())
+			log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+			return []VariableMapping{}, errors.New(msg)
+		}
+
+		output = append(output, mapping)
+	}
+
+	return output, nil
+}
+
 func GetVariableMapping(entryID int64) (VariableMapping, error) {
 
-	log.Printf("[accessors] getting microservice entry...")
+	log.Printf("[accessors] getting variable entry...")
 
 	//get the IDs
 	var mapping DBVariable
