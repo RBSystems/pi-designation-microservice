@@ -32,15 +32,15 @@ func AddMappings(mapTable, colName, defId string, entries *Batch) ([]int64, erro
 
 	var output []int64
 
-	for class, designations := range entries.Classes {
+	for _, designations := range entries.Classes {
 
-		for _, designation := range designations {
+		for _, designation := range designations.Designations {
 
 			//format SQL
 			command := fmt.Sprintf("INSERT INTO %s (%s, designation_id, class_id, %s) VALUES (?, ?, ?, ?)", mapTable, defId, colName)
 
 			log.Printf("[accessors] SQL: %s", command)
-			result, err := tx.Exec(command, entries.ID, designation, class, entries.Value)
+			result, err := tx.Exec(command, entries.ID, designation, designations.ID, entries.Value)
 			if err != nil {
 				msg := fmt.Sprintf("insert action failed: %s", err.Error())
 				log.Printf("%s", color.HiRedString("[accessors] %s", msg))

@@ -2,9 +2,15 @@ package accessors
 
 //allows aliasing of many mapping entries
 type Batch struct {
-	ID      int64             `json:"name"`    //uniquely identifies an entry in a table of definitions
-	Classes map[int64][]int64 `json:"classes"` //maps a class ID to a list of designation IDs
-	Value   string            `json:"value"`   //holds a value to be added to a many-to-many table
+	ID      int64                            `json:"name"`    //uniquely identifies an entry in a table of definitions
+	Classes map[string]ClassDesignationBatch `json:"classes"` //maps a class ID to a list of designation IDs
+	Value   string                           `json:"value"`   //holds a value to be added to a many-to-many table
+}
+
+//only necessary to make JSON work
+type ClassDesignationBatch struct {
+	ID           int64   `json:"id"`           //reprsents the ID of a class definition
+	Designations []int64 `json:"designations"` //list of designation IDs
 }
 
 //common pieces of any mapping
@@ -51,23 +57,31 @@ type DBMicroservice struct {
 
 //basic pieces of any definition - types match DB table
 type Definition struct {
-	ID          int64  `json"id" db:"id"`
-	Name        string `json:"name" db:"name"`
-	Description string `jdon:"description" db:"description"`
+	ID          int64  `db:"id"`
+	Name        string `db:"name"`
+	Description string `db:"description"`
 }
 
 //represents a pi function - AV control, Scheduling, etc.
 //row in class_definitions table
-type Class Definition
+type Class struct {
+	Definition
+}
 
 //represents a code base - dev, stage, prod, etc.
 //row in designation_definitions table
-type Designation Definition
+type Designation struct {
+	Definition
+}
 
 //represents a Variable name
 //row in variable_definitions table
-type Variable Definition
+type Variable struct {
+	Definition
+}
 
 //represents a Microservice name
 //row in microservice_definitions table
-type Microservice Definition
+type Microservice struct {
+	Definition
+}

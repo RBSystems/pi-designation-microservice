@@ -12,7 +12,8 @@ import (
 
 const MICRO = "microservice_definitions"
 const MMAP = "microservice_mappings"
-const MID = "micorservice_id"
+const COLUMN_NAME = "yaml"
+const MID = "microservice_id"
 
 func AddMicroserviceDefinition(context echo.Context) error {
 
@@ -76,7 +77,7 @@ func AddMicroserviceMappings(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, msg)
 	}
 
-	lastInserted, err := ac.AddMappings(MICRO, MMAP, MID, &mappings)
+	lastInserted, err := ac.AddMappings(MMAP, COLUMN_NAME, MID, &mappings)
 	if err != nil {
 		msg := fmt.Sprintf("variables not added: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
