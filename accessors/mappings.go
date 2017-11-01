@@ -187,7 +187,7 @@ func GetVariableMapping(entryID int64) (VariableMapping, error) {
 
 	//get the IDs
 	var mapping DBVariable
-	err := db.DB().Get(&mapping, "SELECT * FROM microservice_mappings WHERE id = ?", entryID)
+	err := db.DB().Get(&mapping, "SELECT * FROM variable_mappings WHERE id = ?", entryID)
 	if err != nil {
 		msg := fmt.Sprintf("failed to execute query: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[accessors] %s", msg))

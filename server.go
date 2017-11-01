@@ -43,7 +43,7 @@ func main() {
 
 	//edit mapping
 	secure.PUT("/variables/mappings/edit/single", handlers.EditVariableMapping)
-	secure.PUT("/microservices/mappings/add/single", handlers.EditMicroserviceMapping)
+	secure.PUT("/microservices/mappings/edit/single", handlers.EditMicroserviceMapping)
 
 	server := http.Server{
 		Addr:           PORT,
