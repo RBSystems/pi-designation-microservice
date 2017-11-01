@@ -30,8 +30,10 @@ func main() {
 	secure.POST("/microservices/definitions/add", handlers.AddMicroserviceDefinition)
 
 	//add mapping
-	secure.POST("/variables/mappings/add", handlers.AddVariableMappings)
-	secure.POST("/microservices/mappings/add", handlers.AddMicroserviceMappings)
+	secure.POST("/variables/mappings/add/multiple", handlers.AddVariableMappings)
+	secure.POST("/microservices/mappings/add/multiple", handlers.AddMicroserviceMappings)
+	secure.POST("/variables/mappings/add/single", handlers.AddVariableMapping)
+	secure.POST("/microservices/mappings/add/single", handlers.AddMicroserviceMapping)
 
 	//edit definition
 	secure.PUT("/designations/definitions/edit", handlers.EditDesignationDefinition)
@@ -40,6 +42,8 @@ func main() {
 	secure.PUT("/microservices/definitions/edit", handlers.EditMicroserviceDefinition)
 
 	//edit mapping
+	secure.PUT("/variables/mappings/edit/single", handlers.EditVariableMapping)
+	secure.PUT("/microservices/mappings/add/single", handlers.EditMicroserviceMapping)
 
 	server := http.Server{
 		Addr:           PORT,

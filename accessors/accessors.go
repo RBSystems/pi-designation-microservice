@@ -2,9 +2,9 @@ package accessors
 
 //allows aliasing of many mapping entries
 type Batch struct {
-	ID      int64                            `json:"name"`    //uniquely identifies an entry in a table of definitions
-	Classes map[string]ClassDesignationBatch `json:"classes"` //maps a class ID to a list of designation IDs
-	Value   string                           `json:"value"`   //holds a value to be added to a many-to-many table
+	ID      int64                   `json:"name"`    //uniquely identifies an entry in a table of definitions
+	Classes []ClassDesignationBatch `json:"classes"` //maps a class ID to a list of designation IDs
+	Value   string                  `json:"value"`   //holds a value to be added to a many-to-many table
 }
 
 //only necessary to make JSON work
@@ -64,24 +64,16 @@ type Definition struct {
 
 //represents a pi function - AV control, Scheduling, etc.
 //row in class_definitions table
-type Class struct {
-	Definition
-}
+type Class Definition
 
 //represents a code base - dev, stage, prod, etc.
 //row in designation_definitions table
-type Designation struct {
-	Definition
-}
+type Designation Definition
 
 //represents a Variable name
 //row in variable_definitions table
-type Variable struct {
-	Definition
-}
+type Variable Definition
 
 //represents a Microservice name
 //row in microservice_definitions table
-type Microservice struct {
-	Definition
-}
+type Microservice Definition
