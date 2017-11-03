@@ -41,7 +41,7 @@ func AddDefinition(table string, def *Definition) error {
 
 func EditDefinition(table string, def *Definition) error {
 
-	log.Printf("[handlers] updating definition in %s...", table)
+	log.Printf("[accessors] updating definition in %s...", table)
 
 	//validate input
 	if len(def.Name) == 0 {
@@ -77,6 +77,40 @@ func EditDefinition(table string, def *Definition) error {
 
 	if numRows < 1 {
 		msg := "invalid edit"
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return errors.New(msg)
+	}
+
+	return nil
+}
+
+func GetDefinitionById(table string, def *Definition) error {
+
+	log.Print("[accessors] fetching definition from %s", table)
+
+	//format SQL
+	command := fmt.Sprintf("SELECT * FROM %s WHERE id = ?", table)
+
+	//fill struct
+	err := db.DB().Select(def, command, def.ID)
+	if err != nil {
+		msg := fmt.Sprintf("definition not found: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return errors.New(msg)
+	}
+
+	return nil
+}
+
+func GetAllDefinitions(table string, defs *[]Definition) error {
+
+	log.Printf("[accessors] getting all definitions from table: %s", table)
+
+	cmd := fmt.Sprintf("SELECT * FROM %s", table)
+
+	err := db.DB().Select(defs, cmd)
+	if err != nil {
+		msg := fmt.Sprintf("definitions not found: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
 		return errors.New(msg)
 	}

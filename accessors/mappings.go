@@ -76,8 +76,6 @@ func AddMapping(mappingTable, definitionColumnName, valueColumnName, value strin
 	return id, nil
 }
 
-func EditMappings() {}
-
 func EditMapping(mappingTable, definitionColumnName, valueColumnName, value string, definitionID, classID, designationID, mappingID int64) error {
 
 	log.Printf("[accessors] editing mapping...")
@@ -96,47 +94,93 @@ func EditMapping(mappingTable, definitionColumnName, valueColumnName, value stri
 	return nil
 }
 
-func GetMicroserviceMappings(IDs []int64) ([]MicroserviceMapping, error) {
+func GetAllMicroserviceMappings() ([]MicroserviceMapping, error) {
+
+	log.Printf("[accessors] getting all microservice mappings...")
+
+	var mappings []DBMicroservice
+	err := db.DB().Select(&mappings, "SELECT * FROM microservice_mappings")
+	if err != nil {
+		msg := fmt.Sprintf("mappings not found: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return []MicroserviceMapping{}, errors.New(msg)
+	}
+
+	var output []MicroserviceMapping
+
+	for _, mapping := range mappings {
+
+		var microservice MicroserviceMapping
+		err = FillMicroserviceMapping(&mapping, &microservice)
+		if err != nil {
+			msg := fmt.Sprintf("microservice not found: %s", err.Error())
+			log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+			return []MicroserviceMapping{}, errors.New(msg)
+		}
+
+		output = append(output, microservice)
+	}
+
+	return output, nil
+
+}
+
+func GetMicroserviceMappingsById(IDs []int64) ([]MicroserviceMapping, error) {
 
 	log.Printf("[accessors] getting microservice entries...")
 
 	var output []MicroserviceMapping
 	for _, id := range IDs {
 
-		mapping, err := GetMicroserviceMapping(id)
+		var microservice MicroserviceMapping
+		err := GetMicroserviceMappingById(id, &microservice)
 		if err != nil {
 			msg := fmt.Sprintf("entry not found: %s", err.Error())
 			log.Printf("%s", color.HiRedString("[accessors] %s", msg))
 			return []MicroserviceMapping{}, errors.New(msg)
 		}
 
-		output = append(output, mapping)
+		output = append(output, microservice)
 	}
 
 	return output, nil
 }
 
-func GetMicroserviceMapping(entryID int64) (MicroserviceMapping, error) {
+func GetMicroserviceMappingById(entryID int64, microservice *MicroserviceMapping) error {
 
 	log.Printf("[accessors] getting microservice entry...")
 
 	//get the IDs
 	var mapping DBMicroservice
-	err := db.DB().Get(&mapping, "SELECT * FROM microservice_mappings WHERE id = ?", entryID)
+	err := db.DB().Get(mapping, "SELECT * FROM microservice_mappings WHERE id = ?", entryID)
 	if err != nil {
 		msg := fmt.Sprintf("failed to execute query: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-		return MicroserviceMapping{}, errors.New(msg)
+		return errors.New(msg)
 	}
 
 	//TODO:make sure it's not the empty set
 	//does Get() take care of that?
 
+	err = FillMicroserviceMapping(&mapping, microservice)
+	if err != nil {
+		msg := fmt.Sprintf("failed to execute query: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return errors.New(msg)
+	}
+
+	return nil
+
+}
+
+//takes entry in the microservice_mappings table and fleshes it out
+func FillMicroserviceMapping(mapping *DBMicroservice, output *MicroserviceMapping) error {
+
 	class, desig, err := GetClassAndDesignation(mapping.ClassID, mapping.DesigID)
 	if err != nil {
 		msg := fmt.Sprintf("entry not found: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-		return MicroserviceMapping{}, errors.New(msg)
+		return errors.New(msg)
 	}
 
 	var microservice Microservice
@@ -144,7 +188,7 @@ func GetMicroserviceMapping(entryID int64) (MicroserviceMapping, error) {
 	if err != nil {
 		msg := fmt.Sprintf("entry not found: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-		return MicroserviceMapping{}, errors.New(msg)
+		return errors.New(msg)
 	}
 
 	placeHolder := Mapping{
@@ -153,73 +197,11 @@ func GetMicroserviceMapping(entryID int64) (MicroserviceMapping, error) {
 		Designation: desig,
 	}
 
-	return MicroserviceMapping{
-		Mapping:      placeHolder,
-		Microservice: microservice,
-		YAML:         mapping.YAML,
-	}, nil
+	output.Mapping = placeHolder
+	output.Microservice = microservice
+	output.YAML = mapping.YAML
 
-}
-
-func GetVariableMappings(IDs []int64) ([]VariableMapping, error) {
-
-	log.Printf("[accessors] getting microservice entries...")
-
-	var output []VariableMapping
-	for _, id := range IDs {
-
-		mapping, err := GetVariableMapping(id)
-		if err != nil {
-			msg := fmt.Sprintf("entry not found: %s", err.Error())
-			log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-			return []VariableMapping{}, errors.New(msg)
-		}
-
-		output = append(output, mapping)
-	}
-
-	return output, nil
-}
-
-func GetVariableMapping(entryID int64) (VariableMapping, error) {
-
-	log.Printf("[accessors] getting variable entry...")
-
-	//get the IDs
-	var mapping DBVariable
-	err := db.DB().Get(&mapping, "SELECT * FROM variable_mappings WHERE id = ?", entryID)
-	if err != nil {
-		msg := fmt.Sprintf("failed to execute query: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-		return VariableMapping{}, errors.New(msg)
-	}
-
-	class, desig, err := GetClassAndDesignation(mapping.ClassID, mapping.DesigID)
-	if err != nil {
-		msg := fmt.Sprintf("entry not found: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-		return VariableMapping{}, errors.New(msg)
-	}
-
-	var variable Variable
-	err = db.DB().Get(&variable, "SELECT * from variable_definitions WHERE id = ?", mapping.VarID)
-	if err != nil {
-		msg := fmt.Sprintf("entry not found: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-		return VariableMapping{}, errors.New(msg)
-	}
-
-	placeHolder := Mapping{
-		ID:          mapping.ID,
-		Class:       class,
-		Designation: desig,
-	}
-	return VariableMapping{
-		Mapping:  placeHolder,
-		Variable: variable,
-		Value:    mapping.Value,
-	}, nil
-
+	return nil
 }
 
 func GetClassAndDesignation(classID, designationID int64) (class Class, designation Designation, err error) {

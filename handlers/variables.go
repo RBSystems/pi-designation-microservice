@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	ac "github.com/byuoitav/pi-designation-microservice/accessors"
 	"github.com/fatih/color"
@@ -41,7 +42,8 @@ func AddVariableMapping(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, msg)
 	}
 
-	entry, err := ac.GetVariableMapping(id)
+	var entry ac.VariableMapping
+	err = ac.GetVariableMappingById(id, &entry)
 	if err != nil {
 		msg := fmt.Sprintf("new entry not found: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
@@ -76,7 +78,7 @@ func AddVariableMappings(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, msg)
 	}
 
-	entries, err := ac.GetVariableMappings(lastInserted)
+	entries, err := ac.GetVariableMappingsById(lastInserted)
 	if err != nil {
 		msg := fmt.Sprintf("new entries not found: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
@@ -113,7 +115,8 @@ func EditVariableMapping(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, msg)
 	}
 
-	entry, err := ac.GetVariableMapping(mapping.ID)
+	var entry ac.VariableMapping
+	err = ac.GetVariableMappingById(mapping.ID, &entry)
 	if err != nil {
 		msg := fmt.Sprintf("new entries not found: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
@@ -170,3 +173,67 @@ func EditVariableDefinition(context echo.Context) error {
 
 	return context.JSON(http.StatusOK, variable)
 }
+
+func GetVariableDefinition(context echo.Context) error {
+
+	stringId := context.Param("id")
+
+	intId, err := strconv.Atoi(stringId)
+	if err != nil {
+		msg := fmt.Sprintf("invalid ID: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	log.Printf("[handlers] getting variable definition with ID: %d", intId)
+
+	variable := ac.Definition{ID: int64(intId)}
+	err = ac.GetDefinitionById(VARIABLE_DEFINITION_TABLE, &variable)
+	if err != nil {
+		msg := fmt.Sprintf("accessor error: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	return context.JSON(http.StatusOK, variable)
+}
+
+func GetAllVariableDefinitions(context echo.Context) error {
+
+	log.Printf("[handlers] fetching all variable definitions...")
+
+	var variables []ac.Definition
+	err := ac.GetAllDefinitions(VARIABLE_DEFINITION_TABLE, &variables)
+	if err != nil {
+		msg := fmt.Sprintf("accessor error: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	return context.JSON(http.StatusOK, variables)
+}
+
+func GetVariableMappingById(context echo.Context) error {
+
+	stringId := context.Param("id")
+	intId, err := strconv.Atoi(stringId)
+	if err != nil {
+		msg := fmt.Sprintf("invalid ID: %s")
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	log.Printf("[handlers] getting variable mapping with ID: %d", intId)
+
+	var variable ac.VariableMapping
+	err = ac.GetVariableMappingById(int64(intId), &variable)
+	if err != nil {
+		msg := fmt.Sprintf("accessor error: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	return context.JSON(http.StatusOK, variable)
+}
+
+func GetAllVariableMappings(context echo.Context) error { return nil }

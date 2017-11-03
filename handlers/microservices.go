@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	ac "github.com/byuoitav/pi-designation-microservice/accessors"
 	"github.com/fatih/color"
@@ -91,7 +92,8 @@ func AddMicroserviceMapping(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, msg)
 	}
 
-	entry, err := ac.GetMicroserviceMapping(id)
+	var entry ac.MicroserviceMapping
+	err = ac.GetMicroserviceMappingById(id, &entry)
 	if err != nil {
 		msg := fmt.Sprintf("mapping entry not found: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
@@ -128,7 +130,8 @@ func EditMicroserviceMapping(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, msg)
 	}
 
-	entry, err := ac.GetMicroserviceMapping(mapping.ID)
+	var entry ac.MicroserviceMapping
+	err = ac.GetMicroserviceMappingById(mapping.ID, &entry)
 	if err != nil {
 		msg := fmt.Sprintf("new entries not found: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
@@ -161,7 +164,7 @@ func AddMicroserviceMappings(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, msg)
 	}
 
-	entries, err := ac.GetMicroserviceMappings(lastInserted)
+	entries, err := ac.GetMicroserviceMappingsById(lastInserted)
 	if err != nil {
 		msg := fmt.Sprintf("new entries not found: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
@@ -169,4 +172,81 @@ func AddMicroserviceMappings(context echo.Context) error {
 	}
 
 	return context.JSON(http.StatusOK, entries)
+}
+
+func GetMicroserviceDefinitionById(context echo.Context) error {
+
+	stringId := context.Param("id")
+
+	intId, err := strconv.Atoi(stringId)
+	if err != nil {
+		msg := fmt.Sprintf("invalid ID: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	log.Printf("[handlers] getting variable definition with ID: %d", intId)
+
+	microservice := ac.Definition{ID: int64(intId)}
+	err = ac.GetDefinitionById(MICROSERVICE_DEFINITION_TABLE, &microservice)
+	if err != nil {
+		msg := fmt.Sprintf("accessor error: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	return context.JSON(http.StatusOK, microservice)
+
+}
+
+func GetAllMicroserviceDefinitions(context echo.Context) error {
+
+	log.Printf("[handlers] fetching all microservice definitions...")
+
+	var microservices []ac.Definition
+	err := ac.GetAllDefinitions(MICROSERVICE_DEFINITION_TABLE, &microservices)
+	if err != nil {
+		msg := fmt.Sprintf("accessor error: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	return context.JSON(http.StatusOK, microservices)
+}
+
+func GetMicroserviceMappingById(context echo.Context) error {
+
+	stringId := context.Param("id")
+	intId, err := strconv.Atoi(stringId)
+	if err != nil {
+		msg := fmt.Sprintf("invalid ID: %s")
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	log.Printf("[handlers] getting microservice mapping with ID: %d", intId)
+
+	var microservice ac.MicroserviceMapping
+	err = ac.GetMicroserviceMappingById(int64(intId), &microservice)
+	if err != nil {
+		msg := fmt.Sprintf("accessor error: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	return context.JSON(http.StatusOK, microservice)
+}
+
+func GetAllMicroserviceMappings(context echo.Context) error {
+
+	log.Printf("[handlers] fetching all microservice mappings...")
+
+	microservices, err := ac.GetAllMicroserviceMappings()
+	if err != nil {
+		msg := fmt.Sprintf("accessor error: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusInternalServerError, msg)
+	}
+
+	return context.JSON(http.StatusOK, microservices)
 }
