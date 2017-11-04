@@ -43,23 +43,23 @@ func main() {
 
 	//edit mapping
 	secure.PUT("/variables/mappings/edit/single", handlers.EditVariableMapping)
-	secure.PUT("/microservices/mappings/edit/single", handlers.EditMicroserviceMapping) //TODO test this and all that follow
+	secure.PUT("/microservices/mappings/edit/single", handlers.EditMicroserviceMapping)
 
 	//get definition
 	secure.GET("class/definitions/all", handlers.GetAllClassDefinitions)
 	secure.GET("class/definitions/single/:id", handlers.GetClassDefinitionById)
 	secure.GET("designations/definitions/all", handlers.GetAllDesignationDefinitions)
 	secure.GET("designations/definitions/single/:id", handlers.GetDesignationDefinitionById)
-	secure.GET("variables/definitions/all", handlers.GetVariableDefinition)
-	secure.GET("variables/definitions/single/:id", handlers.GetAllVariableDefinitions)
+	secure.GET("variables/definitions/all", handlers.GetAllVariableDefinitions)
+	secure.GET("variables/definitions/single/:id", handlers.GetVariableDefinitionById)
 	secure.GET("microservices/definitions/all", handlers.GetAllMicroserviceDefinitions)
 	secure.GET("microservices/definitions/single/:id", handlers.GetMicroserviceDefinitionById)
 
 	//get mapping
 	secure.GET("variables/mappings/all", handlers.GetAllVariableMappings)
 	secure.GET("variables/mappings/single/:id", handlers.GetVariableMappingById)
-	secure.GET("microservices/mappings/all", handlers.GetAllVariableMappings)
-	secure.GET("microservices/mappings/single/:id", handlers.GetVariableMappingById)
+	secure.GET("microservices/mappings/all", handlers.GetAllMicroserviceMappings)
+	secure.GET("microservices/mappings/single/:id", handlers.GetMicroserviceMappingById)
 
 	//get mappings
 

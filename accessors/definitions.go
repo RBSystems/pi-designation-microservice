@@ -84,15 +84,18 @@ func EditDefinition(table string, def *Definition) error {
 	return nil
 }
 
-func GetDefinitionById(table string, def *Definition) error {
+func GetDefinitionById(table string, id int64, def *Definition) error {
 
-	log.Print("[accessors] fetching definition from %s", table)
+	log.Printf("[accessors] fetching definition from %s with id %d", table, id)
 
 	//format SQL
 	command := fmt.Sprintf("SELECT * FROM %s WHERE id = ?", table)
 
+	//check SQL
+	log.Printf("SQL: %s", command)
+
 	//fill struct
-	err := db.DB().Select(def, command, def.ID)
+	err := db.DB().Get(def, command, id)
 	if err != nil {
 		msg := fmt.Sprintf("definition not found: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[accessors] %s", msg))

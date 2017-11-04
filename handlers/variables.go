@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	ac "github.com/byuoitav/pi-designation-microservice/accessors"
 	"github.com/fatih/color"
@@ -174,21 +173,17 @@ func EditVariableDefinition(context echo.Context) error {
 	return context.JSON(http.StatusOK, variable)
 }
 
-func GetVariableDefinition(context echo.Context) error {
+func GetVariableDefinitionById(context echo.Context) error {
 
-	stringId := context.Param("id")
-
-	intId, err := strconv.Atoi(stringId)
+	id, err := ExtractId(context)
 	if err != nil {
-		msg := fmt.Sprintf("invalid ID: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
+		return context.JSON(http.StatusBadRequest, err.Error())
 	}
 
-	log.Printf("[handlers] getting variable definition with ID: %d", intId)
+	log.Printf("[handlers] getting variable definition with ID: %d", id)
 
-	variable := ac.Definition{ID: int64(intId)}
-	err = ac.GetDefinitionById(VARIABLE_DEFINITION_TABLE, &variable)
+	var variable ac.Definition
+	err = ac.GetDefinitionById(VARIABLE_DEFINITION_TABLE, id, &variable)
 	if err != nil {
 		msg := fmt.Sprintf("accessor error: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
@@ -215,18 +210,15 @@ func GetAllVariableDefinitions(context echo.Context) error {
 
 func GetVariableMappingById(context echo.Context) error {
 
-	stringId := context.Param("id")
-	intId, err := strconv.Atoi(stringId)
+	id, err := ExtractId(context)
 	if err != nil {
-		msg := fmt.Sprintf("invalid ID: %s")
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
+		return context.JSON(http.StatusBadRequest, err.Error())
 	}
 
-	log.Printf("[handlers] getting variable mapping with ID: %d", intId)
+	log.Printf("[handlers] getting variable mapping with ID: %d", id)
 
 	var variable ac.VariableMapping
-	err = ac.GetVariableMappingById(int64(intId), &variable)
+	err = ac.GetVariableMappingById(id, &variable)
 	if err != nil {
 		msg := fmt.Sprintf("accessor error: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
@@ -236,4 +228,16 @@ func GetVariableMappingById(context echo.Context) error {
 	return context.JSON(http.StatusOK, variable)
 }
 
-func GetAllVariableMappings(context echo.Context) error { return nil }
+func GetAllVariableMappings(context echo.Context) error {
+
+	log.Printf("[handlers] fetching all variable mappings...")
+
+	mappings, err := ac.GetAllVariableMappings()
+	if err != nil {
+		msg := fmt.Sprintf("Accessor error: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers %s", msg))
+		return context.JSON(http.StatusInternalServerError, msg)
+	}
+
+	return context.JSON(http.StatusOK, mappings)
+}

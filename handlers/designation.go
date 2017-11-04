@@ -60,12 +60,15 @@ func EditDesignationDefinition(context echo.Context) error {
 
 func GetDesignationDefinitionById(context echo.Context) error {
 
-	id := context.Param("id")
+	id, err := ExtractId(context)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
 
 	log.Printf("[handlers] getting designation with ID: %s", id)
 
 	var designation ac.Definition
-	err := ac.GetDefinitionById(DESIGNATION_TABLE_NAME, &designation)
+	err = ac.GetDefinitionById(DESIGNATION_TABLE_NAME, id, &designation)
 	if err != nil {
 		msg := fmt.Sprintf("Designation definition not found: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))

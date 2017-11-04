@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strconv"
 
 	ac "github.com/byuoitav/pi-designation-microservice/accessors"
 	"github.com/fatih/color"
@@ -176,19 +175,15 @@ func AddMicroserviceMappings(context echo.Context) error {
 
 func GetMicroserviceDefinitionById(context echo.Context) error {
 
-	stringId := context.Param("id")
-
-	intId, err := strconv.Atoi(stringId)
+	id, err := ExtractId(context)
 	if err != nil {
-		msg := fmt.Sprintf("invalid ID: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
+		return context.JSON(http.StatusBadRequest, err.Error())
 	}
 
-	log.Printf("[handlers] getting variable definition with ID: %d", intId)
+	log.Printf("[handlers] getting variable definition with ID: %d", id)
 
-	microservice := ac.Definition{ID: int64(intId)}
-	err = ac.GetDefinitionById(MICROSERVICE_DEFINITION_TABLE, &microservice)
+	var microservice ac.Definition
+	err = ac.GetDefinitionById(MICROSERVICE_DEFINITION_TABLE, id, &microservice)
 	if err != nil {
 		msg := fmt.Sprintf("accessor error: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
@@ -216,18 +211,15 @@ func GetAllMicroserviceDefinitions(context echo.Context) error {
 
 func GetMicroserviceMappingById(context echo.Context) error {
 
-	stringId := context.Param("id")
-	intId, err := strconv.Atoi(stringId)
+	id, err := ExtractId(context)
 	if err != nil {
-		msg := fmt.Sprintf("invalid ID: %s")
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
+		return context.JSON(http.StatusBadRequest, err.Error())
 	}
 
-	log.Printf("[handlers] getting microservice mapping with ID: %d", intId)
+	log.Printf("[handlers] getting microservice mapping with ID: %d", id)
 
 	var microservice ac.MicroserviceMapping
-	err = ac.GetMicroserviceMappingById(int64(intId), &microservice)
+	err = ac.GetMicroserviceMappingById(id, &microservice)
 	if err != nil {
 		msg := fmt.Sprintf("accessor error: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))

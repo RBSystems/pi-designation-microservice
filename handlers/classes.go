@@ -58,12 +58,15 @@ func EditClassDefinition(context echo.Context) error {
 
 func GetClassDefinitionById(context echo.Context) error {
 
-	id := context.Param("id")
+	id, err := ExtractId(context)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
 
 	log.Printf("[handlers] fetching class with id: %s", id)
 
 	var class ac.Definition
-	err := ac.GetDefinitionById(CLASS_TABLE_NAME, &class)
+	err = ac.GetDefinitionById(CLASS_TABLE_NAME, id, &class)
 	if err != nil {
 		msg := fmt.Sprintf("accessor error: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))

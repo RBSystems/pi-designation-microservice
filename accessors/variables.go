@@ -30,6 +30,36 @@ func GetVariableMappingsById(IDs []int64) ([]VariableMapping, error) {
 	return output, nil
 }
 
+func GetAllVariableMappings() ([]VariableMapping, error) {
+
+	log.Printf("[accessors] getting all variable mappings...")
+
+	var mappings []DBVariable
+	err := db.DB().Select(&mappings, "SELECT * FROM variable_mappings")
+	if err != nil {
+		msg := fmt.Sprintf("mappings not found: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return []VariableMapping{}, errors.New(msg)
+	}
+
+	var output []VariableMapping
+
+	for _, mapping := range mappings {
+
+		var variable VariableMapping
+		err = FillVariableMapping(&mapping, &variable)
+		if err != nil {
+			msg := fmt.Sprintf("variable not found: %s", err.Error())
+			log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+			return []VariableMapping{}, errors.New(msg)
+		}
+
+		output = append(output, variable)
+	}
+
+	return output, nil
+}
+
 func GetVariableMappingById(entryID int64, variable *VariableMapping) error {
 
 	log.Printf("[accessors] getting variable entry with ID %d...", entryID)
