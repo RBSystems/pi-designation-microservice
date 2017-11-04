@@ -72,7 +72,7 @@ func main() {
 	secure.DELETE("/microservices/mappings/:id", handlers.DeleteMicroserviceMapping)
 
 	//where the magic happens
-	secure.GET("/configurations/designations/:designation/:class/variables", handlers.GetVariablesByDesignationAndClass)
+	secure.GET("/configurations/designations/:class/:designation/variables", handlers.GetVariablesByDesignationAndClass)
 
 	server := http.Server{
 		Addr:           PORT,
