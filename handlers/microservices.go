@@ -65,6 +65,25 @@ func EditMicroserviceDefinition(context echo.Context) error {
 	return context.JSON(http.StatusOK, microservice)
 }
 
+func DeleteMicroserviceDefinition(context echo.Context) error {
+
+	log.Printf("[handlers] deleting microservice definition...")
+
+	id, err := ExtractId(context)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	err = ac.DeleteDefinition(MICROSERVICE_DEFINITION_TABLE, &id)
+	if err != nil {
+		msg := fmt.Sprintf("unable to delete definition: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	return context.JSON(http.StatusOK, "item deleted")
+}
+
 func AddMicroserviceMapping(context echo.Context) error {
 
 	log.Printf("[handlers] binding microservice mapping...")
@@ -241,4 +260,21 @@ func GetAllMicroserviceMappings(context echo.Context) error {
 	}
 
 	return context.JSON(http.StatusOK, microservices)
+}
+
+func DeleteMicroserviceMapping(context echo.Context) error {
+
+	id, err := ExtractId(context)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	log.Printf("[handlers] deleting variable mapping with id %d...", id)
+
+	err = ac.DeleteMapping(MICROSERVICE_MAPPINGS_TABLE, id)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, "item successfully deleted")
 }

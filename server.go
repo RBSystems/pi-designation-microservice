@@ -46,8 +46,8 @@ func main() {
 	secure.PUT("/microservices/mappings/edit/single", handlers.EditMicroserviceMapping)
 
 	//get definition
-	secure.GET("class/definitions/all", handlers.GetAllClassDefinitions)
-	secure.GET("class/definitions/single/:id", handlers.GetClassDefinitionById)
+	secure.GET("classes/definitions/all", handlers.GetAllClassDefinitions)
+	secure.GET("classes/definitions/single/:id", handlers.GetClassDefinitionById)
 	secure.GET("designations/definitions/all", handlers.GetAllDesignationDefinitions)
 	secure.GET("designations/definitions/single/:id", handlers.GetDesignationDefinitionById)
 	secure.GET("variables/definitions/all", handlers.GetAllVariableDefinitions)
@@ -61,7 +61,15 @@ func main() {
 	secure.GET("microservices/mappings/all", handlers.GetAllMicroserviceMappings)
 	secure.GET("microservices/mappings/single/:id", handlers.GetMicroserviceMappingById)
 
-	//get mappings
+	//delete definition
+	secure.DELETE("/classes/definitions/:id", handlers.DeleteClassDefinition)
+	secure.DELETE("/designations/definitions/:id", handlers.DeleteDesignationDefinition)
+	secure.DELETE("/variables/definitions/:id", handlers.DeleteVariableDefinition)
+	secure.DELETE("/microservices/definitions/:id", handlers.DeleteMicroserviceDefinition)
+
+	//delete mapping
+	secure.DELETE("/variables/mappings/:id", handlers.DeleteVariableMapping)
+	secure.DELETE("/microservices/mappings/:id", handlers.DeleteMicroserviceMapping)
 
 	server := http.Server{
 		Addr:           PORT,

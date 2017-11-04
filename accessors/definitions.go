@@ -120,3 +120,26 @@ func GetAllDefinitions(table string, defs *[]Definition) error {
 
 	return nil
 }
+
+func DeleteDefinition(table string, id *int64) error {
+
+	log.Printf("[accessors] deleting definition entry id %d from table %s", id, table)
+
+	command := fmt.Sprintf("DELETE FROM %s WHERE id = ?", table)
+
+	result, err := db.DB().Exec(command, id)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected < 1 {
+		return errors.New("invalid delete")
+	}
+
+	return nil
+}

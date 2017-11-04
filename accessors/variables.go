@@ -73,6 +73,13 @@ func GetVariableMappingById(entryID int64, variable *VariableMapping) error {
 		return errors.New(msg)
 	}
 
+	err = FillVariableMapping(&mapping, variable)
+	if err != nil {
+		msg := fmt.Sprintf("failed to execute query: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return errors.New(msg)
+	}
+
 	return nil
 }
 
@@ -93,15 +100,11 @@ func FillVariableMapping(entry *DBVariable, mapping *VariableMapping) error {
 		return errors.New(msg)
 	}
 
-	placeHolder := Mapping{
-		ID:          mapping.ID,
-		Class:       class,
-		Designation: desig,
-	}
-
-	mapping.Mapping = placeHolder
 	mapping.Variable = variable
 	mapping.Value = entry.Value
+	mapping.ID = entry.ID
+	mapping.Class = class
+	mapping.Designation = desig
 
 	return nil
 }

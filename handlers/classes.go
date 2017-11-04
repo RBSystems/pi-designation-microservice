@@ -90,3 +90,22 @@ func GetAllClassDefinitions(context echo.Context) error {
 
 	return context.JSON(http.StatusOK, classes)
 }
+
+func DeleteClassDefinition(context echo.Context) error {
+
+	log.Printf("[handlers] deleting class definition...")
+
+	id, err := ExtractId(context)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	err = ac.DeleteDefinition(CLASS_TABLE_NAME, &id)
+	if err != nil {
+		msg := fmt.Sprintf("unable to delete definition: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	return context.JSON(http.StatusOK, "item deleted")
+}

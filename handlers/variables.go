@@ -208,6 +208,25 @@ func GetAllVariableDefinitions(context echo.Context) error {
 	return context.JSON(http.StatusOK, variables)
 }
 
+func DeleteVariableDefinition(context echo.Context) error {
+
+	log.Printf("[handlers] deleting variable definition...")
+
+	id, err := ExtractId(context)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	err = ac.DeleteDefinition(VARIABLE_DEFINITION_TABLE, &id)
+	if err != nil {
+		msg := fmt.Sprintf("unable to delete definition: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	return context.JSON(http.StatusOK, "item deleted")
+}
+
 func GetVariableMappingById(context echo.Context) error {
 
 	id, err := ExtractId(context)
@@ -240,4 +259,21 @@ func GetAllVariableMappings(context echo.Context) error {
 	}
 
 	return context.JSON(http.StatusOK, mappings)
+}
+
+func DeleteVariableMapping(context echo.Context) error {
+
+	id, err := ExtractId(context)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	log.Printf("[handlers] deleting variable mapping with id %d...", id)
+
+	err = ac.DeleteMapping(VARIABLE_MAPPINGS_TABLE, id)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	return context.JSON(http.StatusOK, "item successfully deleted")
 }

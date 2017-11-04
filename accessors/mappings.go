@@ -220,3 +220,19 @@ func GetClassAndDesignation(classID, designationID int64) (class Class, designat
 
 	return
 }
+
+func DeleteMapping(table string, id int64) error {
+
+	log.Printf("[accessors] deleting entry from table %s with id %d", table, id)
+
+	command := fmt.Sprintf("DELETE FROM %s WHERE id = ?", table)
+
+	_, err := db.DB().Exec(command, id)
+	if err != nil {
+		msg := fmt.Sprintf("unable to delete mapping: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
+		return errors.New(msg)
+	}
+
+	return nil
+}
