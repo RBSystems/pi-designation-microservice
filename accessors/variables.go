@@ -108,3 +108,28 @@ func FillVariableMapping(entry *DBVariable, mapping *VariableMapping) error {
 
 	return nil
 }
+
+func GetVariablesByClassAndDesignation(classId, desigId int64) ([]VariableMapping, error) {
+
+	log.Printf("[accessors] querying database for variable mappings with class ID %d and designation ID %d", classId, desigId)
+
+	var preMappings []DBVariable
+	err := db.DB().Select(&preMappings, "SELECT * FROM variable_mappings WHERE designation_id = ? AND class_id = ?", desigId, classId)
+	if err != nil {
+		return []VariableMapping{}, err
+	}
+
+	var output []VariableMapping
+	for _, mapping := range preMappings {
+
+		var variable VariableMapping
+		err = FillVariableMapping(&mapping, &variable)
+		if err != nil {
+			return []VariableMapping{}, err
+		}
+
+		output = append(output, variable)
+	}
+
+	return output, nil
+}

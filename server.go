@@ -24,26 +24,26 @@ func main() {
 	secure := router.Group("", echo.WrapMiddleware(authmiddleware.Authenticate))
 
 	//add definition
-	secure.POST("/designations/definitions/add", handlers.AddDesignationDefinition)
-	secure.POST("/classes/definitions/add", handlers.AddClassDefinition)
-	secure.POST("/variables/definitions/add", handlers.AddVariableDefinition)
-	secure.POST("/microservices/definitions/add", handlers.AddMicroserviceDefinition)
+	secure.POST("/designations/definitions", handlers.AddDesignationDefinition)
+	secure.POST("/classes/definitions", handlers.AddClassDefinition)
+	secure.POST("/variables/definitions", handlers.AddVariableDefinition)
+	secure.POST("/microservices/definitions", handlers.AddMicroserviceDefinition)
 
 	//add mapping
-	secure.POST("/variables/mappings/add/multiple", handlers.AddVariableMappings)
-	secure.POST("/microservices/mappings/add/multiple", handlers.AddMicroserviceMappings)
-	secure.POST("/variables/mappings/add/single", handlers.AddVariableMapping)
-	secure.POST("/microservices/mappings/add/single", handlers.AddMicroserviceMapping)
+	secure.POST("/variables/mappings/multiple", handlers.AddVariableMappings)
+	secure.POST("/microservices/mappings/multiple", handlers.AddMicroserviceMappings)
+	secure.POST("/variables/mappings/single", handlers.AddVariableMapping)
+	secure.POST("/microservices/mappings/single", handlers.AddMicroserviceMapping)
 
 	//edit definition
-	secure.PUT("/designations/definitions/edit", handlers.EditDesignationDefinition)
-	secure.PUT("/classes/definitions/edit", handlers.EditClassDefinition)
-	secure.PUT("/variables/definitions/edit", handlers.EditVariableDefinition)
-	secure.PUT("/microservices/definitions/edit", handlers.EditMicroserviceDefinition)
+	secure.PUT("/designations/definitions", handlers.EditDesignationDefinition)
+	secure.PUT("/classes/definitions", handlers.EditClassDefinition)
+	secure.PUT("/variables/definitions", handlers.EditVariableDefinition)
+	secure.PUT("/microservices/definitions", handlers.EditMicroserviceDefinition)
 
 	//edit mapping
-	secure.PUT("/variables/mappings/edit/single", handlers.EditVariableMapping)
-	secure.PUT("/microservices/mappings/edit/single", handlers.EditMicroserviceMapping)
+	secure.PUT("/variables/mappings/single", handlers.EditVariableMapping)
+	secure.PUT("/microservices/mappings/single", handlers.EditMicroserviceMapping)
 
 	//get definition
 	secure.GET("classes/definitions/all", handlers.GetAllClassDefinitions)
@@ -70,6 +70,9 @@ func main() {
 	//delete mapping
 	secure.DELETE("/variables/mappings/:id", handlers.DeleteVariableMapping)
 	secure.DELETE("/microservices/mappings/:id", handlers.DeleteMicroserviceMapping)
+
+	//where the magic happens
+	secure.GET("/configurations/designations/:designation/:class/variables", handlers.GetVariablesByDesignationAndClass)
 
 	server := http.Server{
 		Addr:           PORT,
