@@ -105,7 +105,7 @@ CREATE TABLE `microservice_mappings` (
   `class_id` int(11) NOT NULL,
   `microservice_id` int(11) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `designation_id` (`designation_id`,`class_id`,`microservice_id`,`yaml`(1024)),
+  UNIQUE KEY `designation_id` (`designation_id`,`class_id`,`microservice_id`,`yaml`(512)),
   KEY `class_id` (`class_id`),
   KEY `microservice_id` (`microservice_id`),
   CONSTRAINT `designation` FOREIGN KEY (`designation_id`) REFERENCES `designation_definitions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
@@ -133,18 +133,10 @@ DROP TABLE IF EXISTS `rooms`;
 CREATE TABLE `rooms` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `designation_id` int(11) NOT NULL,
-<<<<<<< HEAD
-  `ui_configuration` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
-  `name` varchar(100) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `name` (`name`),
-  KEY `designation_id` (`designation_id`),
-=======
   `ui_configuation` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `name` varchar(100) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `room` (`designation_id`,`name`),
->>>>>>> feature/granularity
   CONSTRAINT `rooms_ibfk_1` FOREIGN KEY (`designation_id`) REFERENCES `designation_definitions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -192,7 +184,7 @@ DROP TABLE IF EXISTS `variable_mappings`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `variable_mappings` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
-  `value` varchar(512) NOT NULL,
+  `value` varchar(80) NOT NULL,
   `designation_id` int(11) NOT NULL,
   `class_id` int(11) NOT NULL,
   `variable_id` int(11) NOT NULL,

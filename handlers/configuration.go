@@ -42,10 +42,10 @@ func GetVariablesByDesignationAndClass(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, msg)
 	}
 
-	return context.JSON(http.StatusOK, file)
+	return context.Blob(http.StatusOK, "text/plain", file)
 }
 
-func ConvertVariablesToString(vars []accessors.VariableMapping) (string, error) {
+func ConvertVariablesToString(vars []accessors.VariableMapping) ([]byte, error) {
 
 	log.Printf("[handlers] converting variable structs to text...")
 	var output bytes.Buffer
@@ -58,5 +58,5 @@ func ConvertVariablesToString(vars []accessors.VariableMapping) (string, error) 
 		output.WriteString("\n")
 	}
 
-	return output.String(), nil
+	return output.Bytes(), nil
 }
