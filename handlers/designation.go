@@ -10,36 +10,104 @@ import (
 	"github.com/labstack/echo"
 )
 
-func AddDesignation(context echo.Context) error {
+const DESIGNATION_TABLE_NAME = "designation_definitions"
 
-	definition := context.Param("definition")
-	log.Printf("[handlers] adding new desigation definition: %s", definition)
+func AddDesignationDefinition(context echo.Context) error {
 
-	designation := ac.Designation{Name: definition}
-	err := ac.AddDesignation(&designation)
+	log.Printf("[handlers] adding new desigation definition")
+
+	var designation ac.Definition
+	err := context.Bind(&designation)
 	if err != nil {
-		msg := fmt.Sprintf("designation not added to database: %s", err.Error())
+		msg := fmt.Sprintf("unable to bind JSON to struct: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
 		return context.JSON(http.StatusInternalServerError, msg)
+	}
+
+	err = ac.AddDefinition(DESIGNATION_TABLE_NAME, &designation)
+	if err != nil {
+		msg := fmt.Sprintf("error adding designation: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusInternalServerError, msg)
+	}
+
+	log.Printf("%s", color.HiGreenString("[handlers] successfully added desigation: %s", designation.Name))
+
+	return context.JSON(http.StatusOK, designation)
+}
+
+func EditDesignationDefinition(context echo.Context) error {
+
+	log.Printf("[handlers] editing designation definition")
+
+	var designation ac.Definition
+	err := context.Bind(&designation)
+	if err != nil {
+		msg := fmt.Sprintf("unable to bind JSON to struct %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	err = ac.EditDefinition(DESIGNATION_TABLE_NAME, &designation)
+	if err != nil {
+		msg := fmt.Sprintf("entry not updated: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
 	}
 
 	return context.JSON(http.StatusOK, designation)
 }
 
-//this will cause a cascading delete
-//be careful doing this
-func DeleteDesignation(context echo.Context) error {
+func GetDesignationDefinitionById(context echo.Context) error {
 
-	desig := context.Param("designation")
-	log.Printf("[handlers] removing designation definition")
-
-	designation := ac.Designation{Name: desig}
-	err := ac.DeleteDesignation(designation)
+	id, err := ExtractId(context)
 	if err != nil {
-		msg := fmt.Sprintf("designation not removed: %s", err.Error())
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	log.Printf("[handlers] getting designation with ID: %s", id)
+
+	var designation ac.Definition
+	err = ac.GetDefinitionById(DESIGNATION_TABLE_NAME, id, &designation)
+	if err != nil {
+		msg := fmt.Sprintf("Designation definition not found: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusInternalServerError, msg)
+		return context.JSON(http.StatusBadRequest, msg)
 	}
 
 	return context.JSON(http.StatusOK, designation)
+}
+
+func GetAllDesignationDefinitions(context echo.Context) error {
+
+	log.Printf("[handlers] fetching all designation definitions...")
+
+	var designations []ac.Definition
+	err := ac.GetAllDefinitions(DESIGNATION_TABLE_NAME, &designations)
+	if err != nil {
+		msg := fmt.Sprintf("Designation definitions not found: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	return context.JSON(http.StatusOK, designations)
+}
+
+func DeleteDesignationDefinition(context echo.Context) error {
+
+	log.Printf("[handlers] deleting designation definition...")
+
+	id, err := ExtractId(context)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	err = ac.DeleteDefinition(DESIGNATION_TABLE_NAME, &id)
+	if err != nil {
+		msg := fmt.Sprintf("unable to delete definition: %s", err.Error())
+		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	return context.JSON(http.StatusOK, "item deleted")
 }

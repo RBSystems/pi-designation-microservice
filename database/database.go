@@ -1,23 +1,22 @@
 package database
 
 import (
-	"database/sql"
 	"log"
 	"os"
 	"sync"
 
-	_ "github.com/go-sql-driver/mysql" // Blank import due to its use as a driver
-
 	"github.com/fatih/color"
+	_ "github.com/go-sql-driver/mysql" // Blank import due to its use as a driver
+	"github.com/jmoiron/sqlx"
 )
 
 /** lock things down here **/
 var once sync.Once
 
 /** all the good stuff lives here **/
-var db *sql.DB
+var db *sqlx.DB
 
-func DB() *sql.DB {
+func DB() *sqlx.DB {
 	once.Do(func() {
 		//build source data
 		data := os.Getenv("DESIGNATION_DATABASE_USERNAME") + ":" +
@@ -26,14 +25,8 @@ func DB() *sql.DB {
 			os.Getenv("DESIGNATION_DATABASE_PORT") + ")" + "/" +
 			os.Getenv("DESIGNATION_DATABASE_NAME")
 
-		log.Printf("[database] data: %s", data)
-
-		var err error
-
-		db, err = sql.Open("mysql", data)
-		if err != nil {
-			log.Panicf("%s", color.HiRedString("[dbo] unable to open database: %s", err.Error()))
-		}
+		log.Printf("%s", color.HiCyanString("[database] data: %s", data))
+		db = sqlx.MustOpen("mysql", data)
 	})
 
 	return db

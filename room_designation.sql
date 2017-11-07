@@ -108,9 +108,9 @@ CREATE TABLE `microservice_mappings` (
   UNIQUE KEY `designation_id` (`designation_id`,`class_id`,`microservice_id`,`yaml`(1024)),
   KEY `class_id` (`class_id`),
   KEY `microservice_id` (`microservice_id`),
-  CONSTRAINT `microservice_mappings_ibfk_1` FOREIGN KEY (`designation_id`) REFERENCES `designation_definitions` (`id`),
-  CONSTRAINT `microservice_mappings_ibfk_2` FOREIGN KEY (`class_id`) REFERENCES `class_definitions` (`id`),
-  CONSTRAINT `microservice_mappings_ibfk_3` FOREIGN KEY (`microservice_id`) REFERENCES `microservice_definitions` (`id`)
+  CONSTRAINT `designation` FOREIGN KEY (`designation_id`) REFERENCES `designation_definitions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `microservice_mappings_ibfk_4` FOREIGN KEY (`class_id`) REFERENCES `class_definitions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `microservice_mappings_ibfk_5` FOREIGN KEY (`microservice_id`) REFERENCES `microservice_definitions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -133,11 +133,18 @@ DROP TABLE IF EXISTS `rooms`;
 CREATE TABLE `rooms` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `designation_id` int(11) NOT NULL,
+<<<<<<< HEAD
   `ui_configuration` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
   `name` varchar(100) NOT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `name` (`name`),
   KEY `designation_id` (`designation_id`),
+=======
+  `ui_configuation` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL,
+  `name` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `room` (`designation_id`,`name`),
+>>>>>>> feature/granularity
   CONSTRAINT `rooms_ibfk_1` FOREIGN KEY (`designation_id`) REFERENCES `designation_definitions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -193,9 +200,9 @@ CREATE TABLE `variable_mappings` (
   UNIQUE KEY `designation_id` (`designation_id`,`class_id`,`variable_id`,`value`),
   KEY `class_id` (`class_id`),
   KEY `variable_id` (`variable_id`),
-  CONSTRAINT `variable_mappings_ibfk_1` FOREIGN KEY (`designation_id`) REFERENCES `designation_definitions` (`id`),
-  CONSTRAINT `variable_mappings_ibfk_2` FOREIGN KEY (`class_id`) REFERENCES `class_definitions` (`id`),
-  CONSTRAINT `variable_mappings_ibfk_3` FOREIGN KEY (`variable_id`) REFERENCES `variable_definitions` (`id`)
+  CONSTRAINT `variable_mappings_ibfk_4` FOREIGN KEY (`designation_id`) REFERENCES `designation_definitions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `variable_mappings_ibfk_5` FOREIGN KEY (`class_id`) REFERENCES `class_definitions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `variable_mappings_ibfk_6` FOREIGN KEY (`variable_id`) REFERENCES `variable_definitions` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -217,4 +224,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2017-10-19 21:03:06
+-- Dump completed on 2017-10-20 15:32:33
