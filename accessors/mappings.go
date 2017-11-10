@@ -236,3 +236,16 @@ func DeleteMapping(table string, id int64) error {
 
 	return nil
 }
+
+func GetDockerComposeByDesignationAndClass(microservices *[]DBMicroservice, classId, desigId int64) error {
+
+	log.Printf("[accessors] querying database for microservice mappings with class ID %d and designation ID %d", classId, desigId)
+
+	err := db.DB().Select(microservices, "SELECT * FROM microservice_mappings WHERE designation_id = ? AND class_id = ?", desigId, classId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}

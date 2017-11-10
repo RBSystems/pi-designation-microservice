@@ -33,7 +33,7 @@ func main() {
 	secure.POST("/variables/mappings/multiple", handlers.AddVariableMappings)
 	secure.POST("/microservices/mappings/multiple", handlers.AddMicroserviceMappings)
 	secure.POST("/variables/mappings/single", handlers.AddVariableMapping)
-	secure.POST("/microservices/mappings/single", handlers.AddMicroserviceMapping)
+	secure.POST("/microservices/mappings/classes/:class/designations/:designation/microservices/:microservice", handlers.AddMicroserviceMapping)
 
 	//edit definition
 	secure.PUT("/designations/definitions", handlers.EditDesignationDefinition)
@@ -43,7 +43,7 @@ func main() {
 
 	//edit mapping
 	secure.PUT("/variables/mappings/single", handlers.EditVariableMapping)
-	secure.PUT("/microservices/mappings/single", handlers.EditMicroserviceMapping)
+	secure.PUT("/microservices/mappings/classes/:class/designations/:designation/microservices/:microservice/:mapping", handlers.EditMicroserviceMapping)
 
 	//get definition
 	secure.GET("classes/definitions/all", handlers.GetAllClassDefinitions)
@@ -73,6 +73,7 @@ func main() {
 
 	//where the magic happens
 	secure.GET("/configurations/designations/:class/:designation/variables", handlers.GetVariablesByDesignationAndClass)
+	secure.GET("/configurations/designations/:class/:designation/docker-compose", handlers.GetDockerComposeByDesignationAndClass)
 
 	server := http.Server{
 		Addr:           PORT,

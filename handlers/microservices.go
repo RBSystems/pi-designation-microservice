@@ -2,8 +2,10 @@ package handlers
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"strconv"
 
 	ac "github.com/byuoitav/pi-designation-microservice/accessors"
 	"github.com/fatih/color"
@@ -88,22 +90,40 @@ func AddMicroserviceMapping(context echo.Context) error {
 
 	log.Printf("[handlers] binding microservice mapping...")
 
-	var mapping ac.MicroserviceMapping
-	err := context.Bind(&mapping)
+	//get IDs
+	class := context.Param("class")
+	desig := context.Param("designation")
+	microservice := context.Param("microservice")
+
+	classId, err := strconv.Atoi(class)
 	if err != nil {
-		msg := fmt.Sprintf("unable to bind JSON to struct: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
+		return err
+	}
+
+	desigId, err := strconv.Atoi(desig)
+	if err != nil {
+		return err
+	}
+
+	microId, err := strconv.Atoi(microservice)
+	if err != nil {
+		return err
+	}
+
+	request := context.Request()
+	yaml, err := ioutil.ReadAll(request.Body)
+	if err != nil {
+		return err
 	}
 
 	id, err := ac.AddMapping(
 		MICROSERVICE_MAPPINGS_TABLE,
 		MICROSERVICE_DEFINITION_COLUMN,
 		MICROSERVICE_COLUMN_NAME,
-		mapping.YAML,
-		mapping.Microservice.ID,
-		mapping.Class.ID,
-		mapping.Designation.ID)
+		string(yaml),
+		int64(microId),
+		int64(classId),
+		int64(desigId))
 	if err != nil {
 		msg := fmt.Sprintf("unable to add microservice mapping: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
@@ -125,23 +145,47 @@ func EditMicroserviceMapping(context echo.Context) error {
 
 	log.Printf("[handlers] binding microservice mapping...")
 
-	var mapping ac.MicroserviceMapping
-	err := context.Bind(&mapping)
+	//get IDs
+	class := context.Param("class")
+	desig := context.Param("designation")
+	microservice := context.Param("microservice")
+	mapping := context.Param("mapping")
+
+	classId, err := strconv.Atoi(class)
 	if err != nil {
-		msg := fmt.Sprintf("unable to bind JSON to struct: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
+		return err
+	}
+
+	desigId, err := strconv.Atoi(desig)
+	if err != nil {
+		return err
+	}
+
+	microId, err := strconv.Atoi(microservice)
+	if err != nil {
+		return err
+	}
+
+	mappingId, err := strconv.Atoi(mapping)
+	if err != nil {
+		return err
+	}
+
+	request := context.Request()
+	yaml, err := ioutil.ReadAll(request.Body)
+	if err != nil {
+		return err
 	}
 
 	err = ac.EditMapping(
 		MICROSERVICE_MAPPINGS_TABLE,
 		MICROSERVICE_DEFINITION_COLUMN,
 		MICROSERVICE_COLUMN_NAME,
-		mapping.YAML,
-		mapping.Microservice.ID,
-		mapping.Class.ID,
-		mapping.Designation.ID,
-		mapping.ID)
+		string(yaml),
+		int64(microId),
+		int64(classId),
+		int64(desigId),
+		int64(mappingId))
 	if err != nil {
 		msg := fmt.Sprintf("unable edit mapping: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
@@ -149,7 +193,7 @@ func EditMicroserviceMapping(context echo.Context) error {
 	}
 
 	var entry ac.MicroserviceMapping
-	err = ac.GetMicroserviceMappingById(mapping.ID, &entry)
+	err = ac.GetMicroserviceMappingById(int64(mappingId), &entry)
 	if err != nil {
 		msg := fmt.Sprintf("new entries not found: %s", err.Error())
 		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
