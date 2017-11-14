@@ -53,7 +53,7 @@ func ConvertVariablesToBytes(vars []ac.VariableMapping) ([]byte, error) {
 	for _, variable := range vars {
 
 		output.WriteString(variable.Variable.Name)
-		output.WriteString(" ")
+		output.WriteString("=")
 		output.WriteString(variable.Value)
 		output.WriteString("\n")
 	}
