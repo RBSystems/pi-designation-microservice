@@ -71,9 +71,16 @@ func main() {
 	secure.DELETE("/variables/mappings/:id", handlers.DeleteVariableMapping)
 	secure.DELETE("/microservices/mappings/:id", handlers.DeleteMicroserviceMapping)
 
-	//where the magic happens
+	//endpoints for consumption by raspi-deployment-microservice
 	secure.GET("/configurations/designations/:class/:designation/variables", handlers.GetVariablesByDesignationAndClass)
 	secure.GET("/configurations/designations/:class/:designation/docker-compose", handlers.GetDockerComposeByDesignationAndClass)
+
+	//room functionality
+	secure.POST("/rooms", handlers.AddRoom)
+	secure.PUT("/rooms", handlers.EditRoom)
+	secure.GET("/rooms", handlers.GetAllRooms)
+	secure.GET("/rooms/:id", handlers.GetRoomById)
+	secure.DELETE("/rooms/:id", handlers.DeleteRoom)
 
 	server := http.Server{
 		Addr:           PORT,
