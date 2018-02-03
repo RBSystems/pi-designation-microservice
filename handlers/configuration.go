@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	ac "github.com/byuoitav/pi-designation-microservice/accessors"
+	"github.com/byuoitav/pi-designation-microservice/configuration"
 	"github.com/fatih/color"
 	"github.com/labstack/echo"
 )
@@ -111,4 +112,27 @@ func ConvertYamlToBytes(microservices []ac.DBMicroservice) ([]byte, error) {
 
 	return output.Bytes(), nil
 
+}
+
+func GetDockerComposeByRoomAndRole(context echo.Context) error {
+
+	room := context.Param("room")
+	role := context.Param("role")
+
+	var yamlSnippets []ac.DBMicroservice
+	err := configuration.GetDockerComposeByRoomAndRole(&yamlSnippets, room, role, "")
+	if err != nil {
+		msg := fmt.Sprintf("docker-compose data not found: %s", err.Error())
+		log.Printf("%s", color.HiRedString)
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	file, err := ConvertYamlToBytes(yamlSnippets)
+	if err != nil {
+		msg := fmt.Sprintf("unable to parse YAML: %s", err.Error())
+		log.Printf("%s", color.HiRedString)
+		return context.JSON(http.StatusBadRequest, msg)
+	}
+
+	return context.Blob(http.StatusOK, "text/plain", file)
 }

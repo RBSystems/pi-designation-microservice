@@ -249,3 +249,13 @@ func GetDockerComposeByDesignationAndClass(microservices *[]DBMicroservice, clas
 	return nil
 
 }
+
+func GetDockerComposeByDesignationAndClassAndMicroservice(microservice *DBMicroservice, roleId, branchId, microId int64) error {
+
+	err := db.DB().Select(microservice, "SELECT * FROM microservice_mappings WHERE designation_id = ? AND class_id ? AND microservice_id = ?", roleId, branchId, microId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

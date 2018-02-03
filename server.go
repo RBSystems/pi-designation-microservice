@@ -74,6 +74,7 @@ func main() {
 	//where the magic happens
 	secure.GET("/configurations/designations/:class/:designation/variables", handlers.GetVariablesByDesignationAndClass)
 	secure.GET("/configurations/designations/:class/:designation/docker-compose", handlers.GetDockerComposeByDesignationAndClass)
+	secure.GET("/configurations/rooms/:room/roles/:role", handlers.GetDockerComposeByRoomAndRole)
 
 	server := http.Server{
 		Addr:           PORT,
