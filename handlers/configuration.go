@@ -114,25 +114,49 @@ func ConvertYamlToBytes(microservices []ac.DBMicroservice) ([]byte, error) {
 
 }
 
-func GetDockerComposeByRoomAndRole(context echo.Context) error {
+func GetDockerComposeByRoomAndDesignation(context echo.Context) error {
 
+	building := context.Param("building")
 	room := context.Param("room")
+	designation := context.Param("designation")
 	role := context.Param("role")
 
-	var yamlSnippets []ac.DBMicroservice
-	err := configuration.GetDockerComposeByRoomAndRole(&yamlSnippets, room, role, "")
+	yamlSnippets, err := configuration.GetDockerComposeByRoom(building, room, designation, role)
 	if err != nil {
-		msg := fmt.Sprintf("docker-compose data not found: %s", err.Error())
-		log.Printf("%s", color.HiRedString)
-		return context.JSON(http.StatusBadRequest, msg)
+		return context.JSON(http.StatusBadRequest, err.Error())
 	}
 
-	file, err := ConvertYamlToBytes(yamlSnippets)
+	dockerCompose, err := ConvertYamlToBytes(yamlSnippets)
 	if err != nil {
-		msg := fmt.Sprintf("unable to parse YAML: %s", err.Error())
-		log.Printf("%s", color.HiRedString)
-		return context.JSON(http.StatusBadRequest, msg)
+		return context.JSON(http.StatusInternalServerError, err.Error())
 	}
 
-	return context.Blob(http.StatusOK, "text/plain", file)
+	return context.Blob(http.StatusOK, "text/plain", dockerCompose)
+
+}
+
+func GetDockerComposeByRoomAndRole(context echo.Context) error {
+
+	roomId, err := strconv.Atoi(context.Param("room"))
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, "invalid room ID")
+	}
+
+	roleId, err := strconv.Atoi(context.Param("role"))
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, "invalid role ID")
+	}
+
+	yamlSnippets, err := configuration.GetDockerComposeByRoomAndRole(roomId, roleId)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	dockerCompose, err := ConvertYamlToBytes(yamlSnippets)
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return context.Blob(http.StatusOK, "text/plain", dockerCompose)
+
 }
