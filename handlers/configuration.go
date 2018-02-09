@@ -114,27 +114,6 @@ func ConvertYamlToBytes(microservices []ac.DBMicroservice) ([]byte, error) {
 
 }
 
-func GetDockerComposeByRoomAndDesignation(context echo.Context) error {
-
-	building := context.Param("building")
-	room := context.Param("room")
-	designation := context.Param("designation")
-	role := context.Param("role")
-
-	yamlSnippets, err := configuration.GetDockerComposeByRoom(building, room, designation, role)
-	if err != nil {
-		return context.JSON(http.StatusBadRequest, err.Error())
-	}
-
-	dockerCompose, err := ConvertYamlToBytes(yamlSnippets)
-	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
-	}
-
-	return context.Blob(http.StatusOK, "text/plain", dockerCompose)
-
-}
-
 func GetDockerComposeByRoomAndRole(context echo.Context) error {
 
 	roomId, err := strconv.Atoi(context.Param("room"))
