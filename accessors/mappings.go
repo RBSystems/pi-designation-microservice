@@ -7,7 +7,6 @@ import (
 
 	db "github.com/byuoitav/pi-designation-microservice/database"
 	"github.com/fatih/color"
-	"github.com/jmoiron/sqlx"
 )
 
 //we're assuming the user knows the IDs for everything
@@ -263,34 +262,19 @@ func GetDockerComposeByDesignationAndClassAndMicroservice(microservice *DBMicros
 	return nil
 }
 
-func GetMinimumSet(microservices *[]DBMicroservice, roleIds []int64, classId, designationId int64) error {
+func GetMinimumSet(microservices *[]DBMicroservice, classId, designationId int64) error {
 
-	log.Printf("[accessors] finding minimum set for class %d, designation %d", classId, designationId)
+	query := `select * from microservice_mappings
+				join standard_sets on
+				and microservice_mappings.designation_id = standard_sets.designation_id
+				and microservice_mappings.microservice_id = standard_sets.microservice_id
+				where standard_sets.class_id= ?
+				and standard_sets.designation_id = ?`
 
-	baseQuery := `SELECT * FROM microservice_mappings
-					WHERE class_id = ? 
-						AND designation_id = ?
-						AND microservice_id IN (
-							SELECT microservice_id FROM standard_sets 
-								WHERE class_id IN (?)
-							)`
-
-	query, args, err := sqlx.In(baseQuery, classId, designationId, roleIds)
+	err := db.DB().Select(microservices, query, classId, designationId)
 	if err != nil {
-		msg := fmt.Sprintf("unable to prepare 'IN' statement: %s", err.Error())
-		return errors.New(msg)
+		return err
 	}
-
-	log.Printf(query)
-	log.Printf("%+v", args)
-
-	err = db.DB().Select(microservices, query, args...)
-	if err != nil {
-		msg := fmt.Sprintf("microservices not found: %s", err.Error())
-		return errors.New(msg)
-	}
-
-	log.Printf("[accessors] found %d microservices", len(*microservices))
 
 	return nil
 }

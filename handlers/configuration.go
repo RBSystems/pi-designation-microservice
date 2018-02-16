@@ -131,11 +131,22 @@ func GetDockerComposeByRoomAndRole(context echo.Context) error {
 		return context.JSON(http.StatusBadRequest, err.Error())
 	}
 
-	dockerCompose, err := ConvertYamlToBytes(yamlSnippets)
-	if err != nil {
-		return context.JSON(http.StatusInternalServerError, err.Error())
+	var output []byte // final output
+
+	for device, yaml := range yamlSnippets {
+
+		yamlBytes, err := ConvertYamlToBytes(yaml)
+		if err != nil {
+			return context.JSON(http.StatusInternalServerError, err.Error())
+		}
+
+		var buffer bytes.Buffer // buffer to handle
+		buffer.WriteString(fmt.Sprintf("%d\n", device))
+		output = append(output, buffer.Bytes()...) //	I know this is a hack, but...
+		output = append(output, yamlBytes...)
+
 	}
 
-	return context.Blob(http.StatusOK, "text/plain", dockerCompose)
+	return context.Blob(http.StatusOK, "text/plain", output)
 
 }

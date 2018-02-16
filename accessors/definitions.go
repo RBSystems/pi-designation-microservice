@@ -147,6 +147,17 @@ func GetAllClasses() ([]Class, error) {
 	return output, nil
 }
 
+func GetAllMicroservices() ([]Microservice, error) {
+
+	var output []Microservice
+	err := db.DB().Select(&output, "SELECT * FROM microservice_definitions")
+	if err != nil {
+		return []Microservice{}, err
+	}
+
+	return output, nil
+}
+
 func DeleteDefinition(table string, id *int64) error {
 
 	log.Printf("[accessors] deleting definition entry id %d from table %s", id, table)
