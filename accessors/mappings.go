@@ -264,17 +264,24 @@ func GetDockerComposeByDesignationAndClassAndMicroservice(microservice *DBMicros
 
 func GetMinimumSet(microservices *[]DBMicroservice, classId, designationId int64) error {
 
-	query := `select * from microservice_mappings
-				join standard_sets on
-				and microservice_mappings.designation_id = standard_sets.designation_id
-				and microservice_mappings.microservice_id = standard_sets.microservice_id
-				where standard_sets.class_id= ?
-				and standard_sets.designation_id = ?`
+	query := `SELECT * FROM microservice_mappings
+				JOIN standard_sets ON
+				microservice_mappings.designation_id = standard_sets.designation_id
+				AND microservice_mappings.microservice_id = standard_sets.microservice_id
+				WHERE standard_sets.class_id= ?
+				AND standard_sets.designation_id = ?`
 
-	err := db.DB().Select(microservices, query, classId, designationId)
-	if err != nil {
-		return err
-	}
+	return db.DB().Select(microservices, query, classId, designationId)
+}
 
-	return nil
+func GetPossibleSet(microservices *[]DBMicroservice, classId, designationId int64) error {
+
+	query := `SELECT * FROM microservice_mappings
+				JOIN possible_sets ON
+				microservice_mappings.designation_id = possible_sets.designation_id
+				AND microservice_mappings.microservice_id = possible_sets.microservice_id
+				WHERE possible_sets.class_id = ?
+				AND possible_sets.designation_id = ?`
+
+	return db.DB().Select(microservices, query, classId, designationId)
 }

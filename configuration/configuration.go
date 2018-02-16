@@ -50,6 +50,12 @@ func GetDockerComposeByRoomAndRole(roomId, roleId int) (map[int][]accessors.DBMi
 		return nil, errors.New(msg)
 	}
 
+	fmt.Printf("\t\t\t\tcommandMicroservices: ")
+	for k, _ := range commandMicroservices {
+		fmt.Printf(color.HiMagentaString("%d ", k))
+	}
+	fmt.Printf("\n")
+
 	output := make(map[int][]accessors.DBMicroservice) //	maps a device ID to a list of YAML snippets
 
 	for _, target := range targets { // build a list of microservices for each target
@@ -63,7 +69,9 @@ func GetDockerComposeByRoomAndRole(roomId, roleId int) (map[int][]accessors.DBMi
 			return nil, errors.New(msg)
 		}
 
-		var roleSet map[int64]accessors.DBMicroservice //	working minimum set of microservices for device
+		roleSet := make(map[int64]accessors.DBMicroservice)      //	working minimum set of functionality microservices for device
+		potentialSet := make(map[int64]accessors.DBMicroservice) //	working potential set of command-oriented microservices
+
 		for _, role := range roles {
 
 			minimumSet, err := GetMinimumSet(role, designationId) //	there exists a minimum set for each role
@@ -73,27 +81,50 @@ func GetDockerComposeByRoomAndRole(roomId, roleId int) (map[int][]accessors.DBMi
 				return nil, errors.New(msg)
 			}
 
-			log.Printf("%v", minimumSet)
-
 			roleSet = MicroserviceUnion(roleSet, minimumSet) //	the minimum set for a device is the union of all the roles
+
+			possibleSet, err := GetPotentialSet(role, designationId) //	get the potential set of microservices for a device
+			if err != nil {
+				msg := fmt.Sprintf("potential microservices for %s not found: %s", target.Name, err.Error())
+				log.Printf("%s", color.HiRedString("[configuration] %s", msg))
+				return nil, errors.New(msg)
+			}
+
+			potentialSet = MicroserviceUnion(potentialSet, possibleSet)
 		}
 
-		log.Printf("%v", roleSet)
-
-		potentialSet, err := GetPotentialSet(target) //	get the potential set of microservices for a device
-		if err != nil {
-			msg := fmt.Sprintf("potential microservices for %s not found: %s", target.Name, err.Error())
-			log.Printf("%s", color.HiRedString("[configuration] %s", msg))
-			return nil, errors.New(msg)
+		fmt.Printf("\t\t\t\troleSet: ")
+		for k, _ := range roleSet {
+			fmt.Printf(color.HiMagentaString("%d ", k))
 		}
+		fmt.Printf("\n")
+
+		fmt.Printf("\t\t\t\tpotentialSet: ")
+		for k, _ := range potentialSet {
+			fmt.Printf(color.HiMagentaString("%d ", k))
+		}
+		fmt.Printf("\n")
 
 		commandSet := MicroserviceIntersect(potentialSet, commandMicroservices) //	find which microservices the device actually needs
-		actualSet := MicroserviceUnion(commandSet, roleSet)                     //	a device needs the union of its role set and its command set
+
+		fmt.Printf("\t\t\t\tcommandSet: ")
+		for k, _ := range commandSet {
+			fmt.Printf(color.HiMagentaString("%d ", k))
+		}
+		fmt.Printf("\n")
+
+		actualSet := MicroserviceUnion(commandSet, roleSet) //	a device needs the union of its role set and its command set
+
+		fmt.Printf("\t\t\t\tfinalSet: ")
+		for k, _ := range actualSet {
+			fmt.Printf(color.HiMagentaString("%d ", k))
+		}
+		fmt.Printf("\n")
 
 		output[target.ID] = convertToList(actualSet) // map the target's ID to the list of services
 	}
 
-	return nil, nil
+	return output, nil
 }
 
 func GetRoomDesignationId(roomId int) (int64, error) {
@@ -147,14 +178,14 @@ func GetDeviceMicroservices(designationId int64, devices []structs.Device) (map[
 					return nil, err
 				}
 
-				output[microserviceId] = microserviceMapping
+				output[microserviceMapping.MicroID] = microserviceMapping
 
 				log.Printf("%s", color.HiYellowString("\t\t added %d", microserviceId))
 			}
 		}
 	}
 
-	return map[int64]accessors.DBMicroservice{}, nil
+	return output, nil
 }
 
 func GetMinimumSet(class, designation int64) (map[int64]accessors.DBMicroservice, error) {
@@ -169,15 +200,28 @@ func GetMinimumSet(class, designation int64) (map[int64]accessors.DBMicroservice
 
 	for _, microservice := range set {
 
-		output[microservice.ID] = microservice
+		output[microservice.MicroID] = microservice //	FIXME IDs come from standard_sets table (they shouldn't)
 	}
 
 	return output, nil
 }
 
-func GetPotentialSet(target structs.Device) (map[int64]accessors.DBMicroservice, error) {
+func GetPotentialSet(class, designation int64) (map[int64]accessors.DBMicroservice, error) {
 
-	return nil, nil
+	var set []accessors.DBMicroservice
+	err := accessors.GetPossibleSet(&set, class, designation)
+	if err != nil {
+		return nil, err
+	}
+
+	output := make(map[int64]accessors.DBMicroservice)
+
+	for _, microservice := range set {
+
+		output[microservice.MicroID] = microservice //	FIXME IDs come from wrong table
+	}
+
+	return output, nil
 }
 
 func GetTargetRoles(target structs.Device) ([]int64, error) {
@@ -200,7 +244,7 @@ func GetTargetRoles(target structs.Device) ([]int64, error) {
 		}
 	}
 
-	return []int64{}, nil
+	return output, nil
 }
 
 func MicroserviceUnion(a map[int64]accessors.DBMicroservice, b map[int64]accessors.DBMicroservice) map[int64]accessors.DBMicroservice {
@@ -218,12 +262,28 @@ func MicroserviceUnion(a map[int64]accessors.DBMicroservice, b map[int64]accesso
 
 func MicroserviceIntersect(a map[int64]accessors.DBMicroservice, b map[int64]accessors.DBMicroservice) map[int64]accessors.DBMicroservice {
 
-	return nil
+	intersect := make(map[int64]accessors.DBMicroservice)
+
+	for key, value := range a { // consider each element in a
+
+		if _, ok := b[key]; ok { // if that element is also in b, the element is a member of the intersect
+
+			intersect[key] = value
+		}
+	}
+
+	return intersect
 }
 
 func convertToList(a map[int64]accessors.DBMicroservice) []accessors.DBMicroservice {
 
-	return []accessors.DBMicroservice{}
+	var output []accessors.DBMicroservice
+	for _, value := range a {
+
+		output = append(output, value)
+	}
+
+	return output
 }
 
 func getMicroserviceName(address string) (string, error) {
@@ -251,17 +311,9 @@ func mapMicroservices() (map[string]int64, error) {
 
 			if strings.Compare(cMicro.Name, dMicro.Name) == 0 {
 
-				log.Printf("mapping %s to %d", cMicro.Address, dMicro.ID)
 				output[cMicro.Address] = dMicro.ID
 			}
 		}
-	}
-
-	log.Printf("output: %d, configMicros: %d", len(output), len(configMicros))
-	log.Printf("%v", output)
-
-	if len(output) < len(configMicros) {
-		log.Printf("%s", color.HiRedString("[configuration] warning: some configuration microservices did not map to designation microservices!"))
 	}
 
 	return output, nil
