@@ -143,7 +143,12 @@ func GetDockerComposeByRoomAndRole(context echo.Context) error {
 		var buffer bytes.Buffer // buffer to handle
 		buffer.WriteString(fmt.Sprintf("%d\n", device))
 		output = append(output, buffer.Bytes()...) //	I know this is a hack, but...
+
 		output = append(output, yamlBytes...)
+
+		buffer.Reset()
+		buffer.WriteString("$$$\n") //	clients can use this to delineate docker-compose files
+		output = append(output, buffer.Bytes()...)
 
 	}
 
