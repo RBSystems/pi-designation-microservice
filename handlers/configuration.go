@@ -102,7 +102,7 @@ func ConvertYamlToBytes(microservices []ac.DBMicroservice) ([]byte, error) {
 
 	var output bytes.Buffer
 
-	output.WriteString("version: '3'\nservices:\n") //common to all JSON
+	output.WriteString("version: '3.0'\nservices:\n") //common to all JSON
 
 	for _, microservice := range microservices {
 
@@ -152,6 +152,6 @@ func GetDockerComposeByRoomAndRole(context echo.Context) error {
 
 	}
 
-	return context.Blob(http.StatusOK, "text/plain", output)
+	return context.Blob(http.StatusOK, "text/plain", bytes.TrimRight(output, "$\n"))
 
 }

@@ -171,16 +171,19 @@ func GetDeviceMicroservices(designationId int64, devices []structs.Device) (map[
 
 			microserviceId := configToDesig[command.Microservice]
 
-			if _, ok := output[microserviceId]; !ok {
+			if !strings.Contains(command.Microservice, "gateway") { //	TODO come up with a better way to handle this
 
-				microserviceMapping, err := accessors.GetMicroserviceMappingByDesignation(designationId, microserviceId)
-				if err != nil {
-					return nil, err
+				if _, ok := output[microserviceId]; !ok {
+
+					microserviceMapping, err := accessors.GetMicroserviceMappingByDesignation(designationId, microserviceId)
+					if err != nil {
+						return nil, err
+					}
+
+					output[microserviceMapping.MicroID] = microserviceMapping
+
+					log.Printf("%s", color.HiYellowString("\t\t added %d", microserviceId))
 				}
-
-				output[microserviceMapping.MicroID] = microserviceMapping
-
-				log.Printf("%s", color.HiYellowString("\t\t added %d", microserviceId))
 			}
 		}
 	}
