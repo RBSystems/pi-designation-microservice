@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	ac "github.com/byuoitav/pi-designation-microservice/accessors"
+	"github.com/byuoitav/pi-designation-microservice/configuration"
 	"github.com/fatih/color"
 	"github.com/labstack/echo"
 )
@@ -276,4 +278,29 @@ func DeleteVariableMapping(context echo.Context) error {
 	}
 
 	return context.JSON(http.StatusOK, "item successfully deleted")
+}
+
+func GetEnvironmentByRoomAndRole(context echo.Context) error {
+
+	roomId, err := strconv.Atoi(context.Param("room"))
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	roleId, err := strconv.Atoi(context.Param("role"))
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	vars, err := configuration.GetEnvironmentByDevice(roomId, roleId)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	file, err := ConvertVariablesToBytes(vars)
+	if err != nil {
+		return context.JSON(http.StatusInternalServerError, err.Error())
+	}
+
+	return context.Blob(http.StatusOK, "text/plain", file)
 }

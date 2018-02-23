@@ -62,69 +62,80 @@ func GetDockerComposeByRoomAndRole(roomId, roleId int) (map[int][]accessors.DBMi
 
 		log.Printf("%s", color.HiGreenString("considering target: %s", target.Name))
 
-		roles, err := GetTargetRoles(target) //	map role IDs from config DB to class IDs from desig DB
+		deviceSet, err := GetDockerComposeByDevice(target, designationId, commandMicroservices)
 		if err != nil {
-			msg := fmt.Sprintf("roles of %s not found: %s", target.Name, err.Error())
+			return nil, err
+		}
+
+		output[target.ID] = deviceSet
+
+	}
+
+	return output, nil
+}
+
+func GetDockerComposeByDevice(target structs.Device, designationId int64, commandMicroservices map[int64]accessors.DBMicroservice) ([]accessors.DBMicroservice, error) {
+
+	roles, err := GetTargetRoles(target) //	map role IDs from config DB to class IDs from desig DB
+	if err != nil {
+		msg := fmt.Sprintf("roles of %s not found: %s", target.Name, err.Error())
+		log.Printf("%s", color.HiRedString("[configuration] %s", msg))
+		return nil, errors.New(msg)
+	}
+
+	roleSet := make(map[int64]accessors.DBMicroservice)      //	working minimum set of functionality microservices for device
+	potentialSet := make(map[int64]accessors.DBMicroservice) //	working potential set of command-oriented microservices
+
+	for _, role := range roles {
+
+		minimumSet, err := GetMinimumSet(role, designationId) //	there exists a minimum set for each role
+		if err != nil {
+			msg := fmt.Sprintf("minimum set for role ID %d not found: %s", role, err.Error())
 			log.Printf("%s", color.HiRedString("[configuration] %s", msg))
 			return nil, errors.New(msg)
 		}
 
-		roleSet := make(map[int64]accessors.DBMicroservice)      //	working minimum set of functionality microservices for device
-		potentialSet := make(map[int64]accessors.DBMicroservice) //	working potential set of command-oriented microservices
+		roleSet = MicroserviceUnion(roleSet, minimumSet) //	the minimum set for a device is the union of all the roles
 
-		for _, role := range roles {
-
-			minimumSet, err := GetMinimumSet(role, designationId) //	there exists a minimum set for each role
-			if err != nil {
-				msg := fmt.Sprintf("minimum set for role ID %d not found: %s", role, err.Error())
-				log.Printf("%s", color.HiRedString("[configuration] %s", msg))
-				return nil, errors.New(msg)
-			}
-
-			roleSet = MicroserviceUnion(roleSet, minimumSet) //	the minimum set for a device is the union of all the roles
-
-			possibleSet, err := GetPotentialSet(role, designationId) //	get the potential set of microservices for a device
-			if err != nil {
-				msg := fmt.Sprintf("potential microservices for %s not found: %s", target.Name, err.Error())
-				log.Printf("%s", color.HiRedString("[configuration] %s", msg))
-				return nil, errors.New(msg)
-			}
-
-			potentialSet = MicroserviceUnion(potentialSet, possibleSet)
+		possibleSet, err := GetPotentialSet(role, designationId) //	get the potential set of microservices for a device
+		if err != nil {
+			msg := fmt.Sprintf("potential microservices for %s not found: %s", target.Name, err.Error())
+			log.Printf("%s", color.HiRedString("[configuration] %s", msg))
+			return nil, errors.New(msg)
 		}
 
-		fmt.Printf("\t\t\t\troleSet: ")
-		for k, _ := range roleSet {
-			fmt.Printf(color.HiMagentaString("%d ", k))
-		}
-		fmt.Printf("\n")
-
-		fmt.Printf("\t\t\t\tpotentialSet: ")
-		for k, _ := range potentialSet {
-			fmt.Printf(color.HiMagentaString("%d ", k))
-		}
-		fmt.Printf("\n")
-
-		commandSet := MicroserviceIntersect(potentialSet, commandMicroservices) //	find which microservices the device actually needs
-
-		fmt.Printf("\t\t\t\tcommandSet: ")
-		for k, _ := range commandSet {
-			fmt.Printf(color.HiMagentaString("%d ", k))
-		}
-		fmt.Printf("\n")
-
-		actualSet := MicroserviceUnion(commandSet, roleSet) //	a device needs the union of its role set and its command set
-
-		fmt.Printf("\t\t\t\tfinalSet: ")
-		for k, _ := range actualSet {
-			fmt.Printf(color.HiMagentaString("%d ", k))
-		}
-		fmt.Printf("\n")
-
-		output[target.ID] = convertToList(actualSet) // map the target's ID to the list of services
+		potentialSet = MicroserviceUnion(potentialSet, possibleSet)
 	}
 
-	return output, nil
+	fmt.Printf("\t\t\t\troleSet: ")
+	for k, _ := range roleSet {
+		fmt.Printf(color.HiMagentaString("%d ", k))
+	}
+	fmt.Printf("\n")
+
+	fmt.Printf("\t\t\t\tpotentialSet: ")
+	for k, _ := range potentialSet {
+		fmt.Printf(color.HiMagentaString("%d ", k))
+	}
+	fmt.Printf("\n")
+
+	commandSet := MicroserviceIntersect(potentialSet, commandMicroservices) //	find which microservices the device actually needs
+
+	fmt.Printf("\t\t\t\tcommandSet: ")
+	for k, _ := range commandSet {
+		fmt.Printf(color.HiMagentaString("%d ", k))
+	}
+	fmt.Printf("\n")
+
+	actualSet := MicroserviceUnion(commandSet, roleSet) //	a device needs the union of its role set and its command set
+
+	fmt.Printf("\t\t\t\tfinalSet: ")
+	for k, _ := range actualSet {
+		fmt.Printf(color.HiMagentaString("%d ", k))
+	}
+	fmt.Printf("\n")
+
+	return convertToList(actualSet), nil // map the target's ID to the list of services
 }
 
 func GetRoomDesignationId(roomId int) (int64, error) {
