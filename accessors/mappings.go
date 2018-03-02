@@ -265,11 +265,11 @@ func GetDockerComposeByDesignationAndClassAndMicroservice(microservice *DBMicros
 func GetMinimumSet(microservices *[]DBMicroservice, classId, designationId int64) error {
 
 	query := `SELECT * FROM microservice_mappings
-				JOIN standard_sets ON
-				microservice_mappings.designation_id = standard_sets.designation_id
-				AND microservice_mappings.microservice_id = standard_sets.microservice_id
-				WHERE standard_sets.class_id= ?
-				AND standard_sets.designation_id = ?`
+				JOIN minimum_microservices ON
+				microservice_mappings.designation_id = minimum_microservices.designation_id
+				AND microservice_mappings.microservice_id = minimum_microservices.microservice_id
+				WHERE minimum_microservices.class_id= ?
+				AND minimum_microservices.designation_id = ?`
 
 	return db.DB().Select(microservices, query, classId, designationId)
 }
@@ -277,11 +277,11 @@ func GetMinimumSet(microservices *[]DBMicroservice, classId, designationId int64
 func GetPossibleSet(microservices *[]DBMicroservice, classId, designationId int64) error {
 
 	query := `SELECT * FROM microservice_mappings
-				JOIN possible_sets ON
-				microservice_mappings.designation_id = possible_sets.designation_id
-				AND microservice_mappings.microservice_id = possible_sets.microservice_id
-				WHERE possible_sets.class_id = ?
-				AND possible_sets.designation_id = ?`
+				JOIN potential_microservices ON
+				microservice_mappings.designation_id = potential_microservices.designation_id
+				AND microservice_mappings.microservice_id = potential_microservices.microservice_id
+				WHERE potential_microservices.class_id = ?
+				AND potential_microservices.designation_id = ?`
 
 	return db.DB().Select(microservices, query, classId, designationId)
 }

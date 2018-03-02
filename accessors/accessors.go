@@ -27,13 +27,6 @@ type MicroserviceMapping struct {
 	YAML         string       `json:"yaml" db:"yaml"`
 }
 
-//represents a complete variable
-type VariableMapping struct {
-	Mapping
-	Variable Variable `json:"variable"`
-	Value    string   `json:"value" db:"yaml"`
-}
-
 //common pieces of a mapping - types match DB
 type DBMapping struct {
 	ID      int64 `db:"id"`
@@ -69,10 +62,6 @@ type Class Definition
 //represents a code base - dev, stage, prod, etc.
 //row in designation_definitions table
 type Designation Definition
-
-//represents a Variable name
-//row in variable_definitions table
-type Variable Definition
 
 //represents a Microservice name
 //row in microservice_definitions table
