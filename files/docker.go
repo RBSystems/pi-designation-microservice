@@ -43,14 +43,14 @@ func GetDockerComposeByRoomAndRole(roomId int, roleId int) (map[int]string, erro
 
 		log.Printf("%s", color.HiGreenString("considering target: %s", target.Name))
 
-		microservices := make(map[int64]accessors.DBMicroservice)
+		//microservices := make(map[int64]accessors.DBMicroservice)
 
-		for _, microservice := range commandMicroservices {
+		//for _, microservice := range commandMicroservices {
 
-			microservices[microservice.ID] = microservice
-		}
+		//	microservices[microservice.ID] = microservice
+		//}
 
-		deviceSet, err := configuration.GetDockerComposeByDevice(target, designationId, microservices)
+		deviceSet, err := configuration.GetDockerComposeByDevice(target, designationId, commandMicroservices)
 		if err != nil {
 			return nil, err
 		}
