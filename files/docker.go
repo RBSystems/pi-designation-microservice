@@ -43,13 +43,6 @@ func GetDockerComposeByRoomAndRole(roomId int, roleId int) (map[int]string, erro
 
 		log.Printf("%s", color.HiGreenString("considering target: %s", target.Name))
 
-		//microservices := make(map[int64]accessors.DBMicroservice)
-
-		//for _, microservice := range commandMicroservices {
-
-		//	microservices[microservice.ID] = microservice
-		//}
-
 		deviceSet, err := configuration.GetDockerComposeByDevice(target, designationId, commandMicroservices)
 		if err != nil {
 			return nil, err
@@ -67,7 +60,7 @@ func GetDockerComposeByRoomAndRole(roomId int, roleId int) (map[int]string, erro
 	return output, nil
 }
 
-func FetchDeviceMetaData(deviceId int) (int64, structs.Device, map[int64]accessors.DBMicroservice, error) {
+func FetchDeviceMetaData(deviceId int) (int64, structs.Device, map[int64]accessors.Microservice, error) {
 
 	log.Printf("[files] fetching meta-data for %d", deviceId)
 
@@ -90,7 +83,7 @@ func FetchDeviceMetaData(deviceId int) (int64, structs.Device, map[int64]accesso
 
 }
 
-func FetchRoomMetaData(roomId int, roleId int) (int64, []structs.Device, map[int64]accessors.DBMicroservice, error) {
+func FetchRoomMetaData(roomId int, roleId int) (int64, []structs.Device, map[int64]accessors.Microservice, error) {
 
 	devices, err := dbo.GetDevicesByRoomId(roomId) //	get all devices in room
 	if err != nil {

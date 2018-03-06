@@ -16,7 +16,7 @@ import (
 building a set of microservice definitions, then query with the designation ID as a parameter
 */
 
-func GetDockerComposeByDevice(target structs.Device, designationId int64, commandMicroservices map[int64]accessors.DBMicroservice) (map[int64]accessors.DBMicroservice, error) {
+func GetDockerComposeByDevice(target structs.Device, designationId int64, commandMicroservices map[int64]accessors.Microservice) (map[int64]accessors.Microservice, error) {
 
 	fmt.Printf("\t\t\t\tcommandMicroservices: ")
 	for k, _ := range commandMicroservices {
@@ -31,8 +31,8 @@ func GetDockerComposeByDevice(target structs.Device, designationId int64, comman
 		return nil, errors.New(msg)
 	}
 
-	roleSet := make(map[int64]accessors.DBMicroservice)      //	working minimum set of functionality microservices for device
-	potentialSet := make(map[int64]accessors.DBMicroservice) //	working potential set of command-oriented microservices
+	roleSet := make(map[int64]accessors.Microservice)      //	working minimum set of functionality microservices for device
+	potentialSet := make(map[int64]accessors.Microservice) //	working potential set of command-oriented microservices
 
 	for _, role := range roles {
 
@@ -147,9 +147,9 @@ func GetDeviceAndDesignationByDeviceId(deviceId int) (int64, structs.Device, err
 }
 
 //builds map of microservice_definition.id to yaml
-func GetDeviceMicroservices(designationId int64, devices []structs.Device) (map[int64]accessors.DBMicroservice, error) {
+func GetDeviceMicroservices(designationId int64, devices []structs.Device) (map[int64]accessors.Microservice, error) {
 
-	output := make(map[int64]accessors.DBMicroservice) //	map of microservice IDs to microservice mappings
+	output := make(map[int64]accessors.Microservice) //	map of microservice IDs to microservice mappings
 
 	configToDesig, err := mapMicroservices()
 	if err != nil {
@@ -175,7 +175,7 @@ func GetDeviceMicroservices(designationId int64, devices []structs.Device) (map[
 						return nil, err
 					}
 
-					output[microserviceMapping.MicroID] = microserviceMapping
+					output[microserviceMapping.MicroserviceId] = microserviceMapping
 
 					log.Printf("%s", color.HiYellowString("\t\t added %d", microserviceId))
 				}
@@ -186,37 +186,37 @@ func GetDeviceMicroservices(designationId int64, devices []structs.Device) (map[
 	return output, nil
 }
 
-func GetMinimumSet(class, designation int64) (map[int64]accessors.DBMicroservice, error) {
+func GetMinimumSet(class, designation int64) (map[int64]accessors.Microservice, error) {
 
-	var set []accessors.DBMicroservice
+	var set []accessors.Microservice
 	err := accessors.GetMinimumSet(&set, class, designation)
 	if err != nil {
 		return nil, err
 	}
 
-	output := make(map[int64]accessors.DBMicroservice)
+	output := make(map[int64]accessors.Microservice)
 
 	for _, microservice := range set {
 
-		output[microservice.MicroID] = microservice //	FIXME IDs come from standard_sets table (they shouldn't)
+		output[microservice.MicroserviceId] = microservice //	FIXME IDs come from standard_sets table (they shouldn't)
 	}
 
 	return output, nil
 }
 
-func GetPotentialSet(class, designation int64) (map[int64]accessors.DBMicroservice, error) {
+func GetPotentialSet(class, designation int64) (map[int64]accessors.Microservice, error) {
 
-	var set []accessors.DBMicroservice
+	var set []accessors.Microservice
 	err := accessors.GetPossibleSet(&set, class, designation)
 	if err != nil {
 		return nil, err
 	}
 
-	output := make(map[int64]accessors.DBMicroservice)
+	output := make(map[int64]accessors.Microservice)
 
 	for _, microservice := range set {
 
-		output[microservice.MicroID] = microservice //	FIXME IDs come from wrong table
+		output[microservice.MicroserviceId] = microservice //	FIXME IDs come from wrong table
 	}
 
 	return output, nil
@@ -245,7 +245,7 @@ func GetTargetRoles(target structs.Device) ([]int64, error) {
 	return output, nil
 }
 
-func MicroserviceUnion(a map[int64]accessors.DBMicroservice, b map[int64]accessors.DBMicroservice) map[int64]accessors.DBMicroservice {
+func MicroserviceUnion(a map[int64]accessors.Microservice, b map[int64]accessors.Microservice) map[int64]accessors.Microservice {
 
 	for key, value := range a {
 
@@ -258,9 +258,9 @@ func MicroserviceUnion(a map[int64]accessors.DBMicroservice, b map[int64]accesso
 	return b
 }
 
-func MicroserviceIntersect(a map[int64]accessors.DBMicroservice, b map[int64]accessors.DBMicroservice) map[int64]accessors.DBMicroservice {
+func MicroserviceIntersect(a map[int64]accessors.Microservice, b map[int64]accessors.Microservice) map[int64]accessors.Microservice {
 
-	intersect := make(map[int64]accessors.DBMicroservice)
+	intersect := make(map[int64]accessors.Microservice)
 
 	for key, value := range a { // consider each element in a
 
@@ -271,11 +271,6 @@ func MicroserviceIntersect(a map[int64]accessors.DBMicroservice, b map[int64]acc
 	}
 
 	return intersect
-}
-
-func getMicroserviceName(address string) (string, error) {
-
-	return "", errors.New("microservice name not found")
 }
 
 func mapMicroservices() (map[string]int64, error) {
@@ -298,7 +293,7 @@ func mapMicroservices() (map[string]int64, error) {
 
 			if strings.Compare(cMicro.Name, dMicro.Name) == 0 {
 
-				output[cMicro.Address] = dMicro.ID
+				output[cMicro.Address] = dMicro.Id
 			}
 		}
 	}

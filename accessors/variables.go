@@ -131,7 +131,9 @@ func GetVariablesByClassAndDesignation(classId, desigId int64) ([]VariableMappin
 	return output, nil
 }
 
-func GetVariablesByMicroserviceAndDesignation(microId, desigId int64) ([]Variable, error) {
+func GetVariablesByMicroserviceAndDesignation(microId, desigId int64) (map[int64]Variable, error) {
+
+	log.Printf("[accessors] fetching variables for service with microservice ID: %s and designation ID: %s", color.HiYellowString("%d", microId), color.HiYellowString("%d", desigId))
 
 	query := `SELECT variable_mappings.id, variable_mappings.variable_id, variable_definitions.name, variable_mappings.designation_id, variable_sets.microservice_id, variable_mappings.value 
 				FROM variable_mappings 
@@ -142,11 +144,18 @@ func GetVariablesByMicroserviceAndDesignation(microId, desigId int64) ([]Variabl
 					ON variable_definitions.id = variable_mappings.variable_id
 				WHERE variable_sets.microservice_id = ? and variable_sets.designation_id = ?`
 
-	var output []Variable
+	var temp []Variable
 
-	err := db.DB().Select(&output, query, microId, desigId)
+	err := db.DB().Select(&temp, query, microId, desigId)
 	if err != nil {
 		return nil, err
+	}
+
+	output := make(map[int64]Variable)
+
+	for _, variable := range temp {
+
+		output[variable.DefinitionId] = variable
 	}
 
 	return output, nil

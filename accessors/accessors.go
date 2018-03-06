@@ -42,11 +42,6 @@ type DBVariable struct {
 }
 
 //row in microservice mapping table of DB
-type DBMicroservice struct {
-	DBMapping
-	MicroID int64  `db:"microservice_id"`
-	YAML    string `db:"yaml"`
-}
 
 //basic pieces of any definition - types match DB table
 type Definition struct {
@@ -62,7 +57,3 @@ type Class Definition
 //represents a code base - dev, stage, prod, etc.
 //row in designation_definitions table
 type Designation Definition
-
-//represents a Microservice name
-//row in microservice_definitions table
-type Microservice Definition

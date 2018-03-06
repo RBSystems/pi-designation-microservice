@@ -3,24 +3,23 @@ package files
 import (
 	"log"
 
-	"github.com/byuoitav/pi-designation-microservice/accessors"
 	"github.com/byuoitav/pi-designation-microservice/configuration"
 	"github.com/fatih/color"
 )
 
 func GetEnvironmentByDevice(deviceId int) (string, error) {
 
-	designationId, target, _, err := FetchDeviceMetaData(deviceId)
+	designationId, target, commandMicroservices, err := FetchDeviceMetaData(deviceId)
 	if err != nil {
 		return "", err
 	}
 
-	microservices, err := configuration.GetDockerComposeByDevice(target, designationId, map[int64]accessors.DBMicroservice{})
+	microservices, err := configuration.GetDockerComposeByDevice(target, designationId, commandMicroservices)
 	if err != nil {
 		return "", err
 	}
 
-	variables, err := configuration.GetDeviceEnvironment(microservices)
+	variables, err := configuration.GetDeviceEnvironment(&target, microservices)
 	if err != nil {
 		return "", err
 	}
@@ -30,7 +29,7 @@ func GetEnvironmentByDevice(deviceId int) (string, error) {
 
 func GetEnvironmentByRoomAndRole(roomId, roleId int) (map[int]string, error) {
 
-	designationId, targets, _, err := FetchRoomMetaData(roomId, roleId)
+	designationId, targets, commandMicroservices, err := FetchRoomMetaData(roomId, roleId)
 	if err != nil {
 		return nil, err
 	}
@@ -41,12 +40,12 @@ func GetEnvironmentByRoomAndRole(roomId, roleId int) (map[int]string, error) {
 
 		log.Printf("%s", color.HiGreenString("considering target: %s", target.Name))
 
-		microservices, err := configuration.GetDockerComposeByDevice(target, designationId, map[int64]accessors.DBMicroservice{})
+		microservices, err := configuration.GetDockerComposeByDevice(target, designationId, commandMicroservices)
 		if err != nil {
 			return nil, err
 		}
 
-		variables, err := configuration.GetDeviceEnvironment(microservices)
+		variables, err := configuration.GetDeviceEnvironment(&target, microservices)
 		if err != nil {
 			return nil, err
 		}

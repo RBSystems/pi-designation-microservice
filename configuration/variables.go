@@ -2,53 +2,72 @@ package configuration
 
 import (
 	"fmt"
+	"log"
 
+	"github.com/byuoitav/configuration-database-microservice/structs"
 	"github.com/byuoitav/pi-designation-microservice/accessors"
 	"github.com/fatih/color"
 )
 
-func GetDeviceEnvironment(microservices map[int64]accessors.DBMicroservice) (map[int64]accessors.Variable, error) {
+const PI_HOSTNAME = 64
+
+func GetDeviceEnvironment(target *structs.Device, microservices map[int64]accessors.Microservice) (map[int64]accessors.Variable, error) {
 
 	output := make(map[int64]accessors.Variable)
 
 	for _, microservice := range microservices {
 
-		potentialVars, err := accessors.GetVariablesByMicroserviceAndDesignation(microservice.ID, microservice.DesigID)
+		log.Printf("[configuration] considering microservice: %s", color.HiMagentaString(microservice.Name))
+
+		potentialVars, err := accessors.GetVariablesByMicroserviceAndDesignation(microservice.MicroserviceId, microservice.DesignationId)
 		if err != nil {
 			return nil, err
 		}
 
-		fmt.Printf("potential set: ")
+		fmt.Printf("potential set: \n")
 		for _, v := range potentialVars {
-			fmt.Printf("%s ", color.HiMagentaString(v.Name))
+			fmt.Printf("\t\t%s\n", color.HiMagentaString(v.Name))
 		}
 		fmt.Printf("\n")
 
-		//output = VariableIntersect(potentialVars, output)
+		output = VariableUnion(potentialVars, output)
 
-		fmt.Printf("working set: ")
+		fmt.Printf("working set: \n")
 		for _, v := range output {
-			fmt.Printf("%s ", color.HiMagentaString(v.Name))
+			fmt.Printf("\t\t%s\n", color.HiMagentaString(v.Name))
 		}
 		fmt.Printf("\n")
 	}
+
+	hostname := fmt.Sprintf("%s-%s-%s", target.Building.Shortname, target.Room.Name, target.Name) // add discrete hostname
+	output[PI_HOSTNAME] = accessors.Variable{Name: "PI_HOSTNAME", Value: hostname}
 
 	return output, nil
 }
 
-func VariableIntersect(a, b []accessors.Variable) []accessors.Variable {
+func VariableUnion(a, b map[int64]accessors.Variable) map[int64]accessors.Variable {
 
-	var output []accessors.Variable
+	for k, v := range a {
 
-	for _, v := range a { //	 range over a, adding anyting b doesn't already have to b
+		b[k] = v
+	}
 
-		if !VariableContains(b, v) {
+	return b
+}
 
-			b = append(b, v)
+func VariableIntersect(a, b map[int64]accessors.Variable) map[int64]accessors.Variable {
+
+	intersect := make(map[int64]accessors.Variable)
+
+	for k, v := range a {
+
+		if _, ok := b[k]; ok {
+
+			intersect[k] = v
 		}
 	}
 
-	return output
+	return intersect
 }
 
 func VariableContains(a []accessors.Variable, v accessors.Variable) bool {
