@@ -1,0 +1,11 @@
+version: 2
+jobs:
+    build:
+        machine: true
+
+        working_directory: /home/circleci/.go_workspace/src/github.com/byuoitav
+
+        steps:
+            - run: go get github.com/byuoitav/pi-designation-microservice
+            - run: cd pi-designation-microservice
+            - run: go build -o pi-designation.monsters
