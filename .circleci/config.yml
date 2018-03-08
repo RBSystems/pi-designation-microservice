@@ -1,0 +1,7 @@
+version: 2
+jobs:
+    build:
+        machine: true
+
+        steps:
+            - run: go get github.com/byuoitav/pi-designation-microservice
