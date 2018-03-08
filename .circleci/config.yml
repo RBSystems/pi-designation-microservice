@@ -10,4 +10,4 @@ jobs:
             - run: cd pi-designation-microservice && go build -o pi-designation.monsters
             - run: cd pi-designation-microservice && docker build --build-arg NAME="$(pwd)" -t byuoitav/pi-designation-microservice:monsters
             - run: cd pi-designation-microservice && docker login -u $(DOCKER_USERNAME) -p $(DOCKER_PASSWORD)
-            - run: cd pi-designation-microservice && docker docker push byuoitav/pi-designation-microservice:monsters
+            - run: cd pi-designation-microservice && docker docker push byuoitav/pi-designation-microservice:monsters . 
