@@ -76,6 +76,7 @@ func main() {
 
 	secure.GET("/environment/rooms/:room/roles/:role", handlers.GetEnvironmentByRoomAndRole)
 	secure.GET("/environment/devices/:id", handlers.GetEnvironmentByDevice)
+	secure.Static("/*", "public")
 
 	server := http.Server{
 		Addr:           PORT,
