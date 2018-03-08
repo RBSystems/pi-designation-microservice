@@ -7,5 +7,4 @@ jobs:
 
         steps:
             - run: go get github.com/byuoitav/pi-designation-microservice
-            - run: cd pi-designation-microservice
-            - run: go build -o pi-designation.monsters
+            - run: cd pi-designation-microservice && go build -o pi-designation.monsters
