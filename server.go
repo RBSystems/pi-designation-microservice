@@ -15,7 +15,7 @@ const PORT = ":5001"
 
 func main() {
 
-	log.Printf("%s", color.HiGreenString("Starting room designation microservice..."))
+	log.Printf("%s", color.HiGreenString("starting room designation microservice..."))
 
 	router := echo.New()
 	router.Pre(middleware.RemoveTrailingSlash())
