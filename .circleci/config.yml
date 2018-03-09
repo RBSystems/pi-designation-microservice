@@ -9,6 +9,6 @@ jobs:
         steps:
             - run: gvt fetch github.com/byuoitav/authmiddleware
             - run: gvt fetch github.com/go-sql-driver/mysql
-            - run: gvt fetch github.com/github.com/jmoiron/sqlx
+            - run: gvt fetch github.com/jmoiron/sqlx
             - checkout
             - run: go build
