@@ -1,8 +1,11 @@
 FROM byuoitav/amd64-alpine
 MAINTAINER Daniel Randall <danny_randall@byu.edu>
 
-COPY pi-designation.monsters pi-designation.monsters
+ARG NAME
+ENV name=${NAME}
+
+COPY ${name}-bin ${name}
 COPY version.txt version.txt
 
-ENTRYPOINT ./pi-designation.monsters
+ENTRYPOINT ./${name}
 
