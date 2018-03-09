@@ -8,7 +8,15 @@ jobs:
 
         steps:
             - checkout
-            - run: gvt fetch github.com/byuoitav/authmiddleware
-            - run: gvt fetch github.com/go-sql-driver/mysql
-            - run: gvt fetch github.com/jmoiron/sqlx
-            - run: go build
+            - run: |
+                gvt fetch github.com/byuoitav/authmiddleware
+                gvt fetch github.com/go-sql-driver/mysql
+                gvt fetch github.com/jmoiron/sqlx
+                go build
+            - setup_remote_docker
+            - run: |
+                docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+                docker build -t byuoitav/pi-designation-microservice:latest .
+                docker push byuoitav/pi-designation-microservice:stage
+
+            
