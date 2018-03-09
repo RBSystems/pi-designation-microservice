@@ -3,7 +3,7 @@ ORG=byuoitav
 BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 
 ifeq($(BRANCH),)
-	BRANCH := $(shell echo $(CIRCLE_BRANCH))
+BRANCH := $(shell echo $(CIRCLE_BRANCH))
 endif
 
 #docker
