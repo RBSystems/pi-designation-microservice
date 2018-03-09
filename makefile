@@ -1,6 +1,10 @@
 NAME=$(shell basename "$(PWD)")
-BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 ORG=byuoitav
+BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
+
+ifeq($(BRANCH),)
+	BRANCH := $(shell echo $(CIRCLE_BRANCH))
+endif
 
 #docker
 UNAME=$(shell echo $(DOCKER_USERNAME))
