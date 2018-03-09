@@ -2,7 +2,7 @@ NAME=$(shell basename "$(PWD)")
 ORG=byuoitav
 BRANCH=$(shell git rev-parse --abbrev-ref HEAD)
 
-ifeq($(BRANCH),HEAD)
+ifeq ($(BRANCH),HEAD)
 BRANCH := $(shell echo $(CIRCLE_BRANCH))
 endif
 
