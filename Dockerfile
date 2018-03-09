@@ -1,14 +1,8 @@
-FROM golang:alpine
+FROM byuoitav/amd64-alpine
+MAINTAINER Daniel Randall <danny_randall@byu.edu>
 
-RUN apk update && apk add git
+COPY pi-designation.monsters pi-designation.monsters
+COPY version.txt version.txt
 
-RUN mkdir -p /go/src/github.com/byuoitav
-ADD . /go/src/github.com/byuoitav/pi-designation-microservice
+ENTRYPOINT ./pi-designation.monsters
 
-WORKDIR /go/src/github.com/byuoitav/pi-designation-microservice
-RUN go get -d -v
-RUN go install -v
-
-CMD ["/go/bin/pi-designation-microservice"]
-
-EXPOSE 5001
