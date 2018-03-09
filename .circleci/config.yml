@@ -13,6 +13,6 @@ jobs:
                 gvt fetch github.com/go-sql-driver/mysql
                 gvt fetch github.com/jmoiron/sqlx
             - setup_remote_docker
-            - run: make docker
+            - run: make 
                 
             
