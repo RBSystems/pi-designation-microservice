@@ -1,7 +1,8 @@
 version: 2
 jobs:
     build:
-        machine: true
+        docker:
+            - image: golang:1.10.0
 
         working_directory: /go/src/github.com/byuoitav/pi-designation-microservice
 
