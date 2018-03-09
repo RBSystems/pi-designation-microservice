@@ -7,4 +7,5 @@ jobs:
         working_directory: /go/src/github.com/byuoitav/pi-designation-microservice
 
         steps:
+            - checkout
             - run: go build
