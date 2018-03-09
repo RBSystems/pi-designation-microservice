@@ -4,3 +4,6 @@ jobs:
         machine: true
 
         working_directory: /go/src/github.com/byuoitav/pi-designation-microservice
+
+        steps:
+            - go build 
