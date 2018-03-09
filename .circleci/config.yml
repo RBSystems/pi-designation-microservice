@@ -16,7 +16,7 @@ jobs:
             - setup_remote_docker
             - run: |
                 docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
-                docker build -t byuoitav/pi-designation-microservice:latest .
+                docker build -t byuoitav/pi-designation-microservice:stage .
                 docker push byuoitav/pi-designation-microservice:stage
 
             
