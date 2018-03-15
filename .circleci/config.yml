@@ -14,3 +14,4 @@ jobs:
                 gvt fetch github.com/jmoiron/sqlx
             - setup_remote_docker
             - run: make docker
+            - run: deploy.sh $CIRCLE_PROJECT_REPONAME $CIRCLE_SHA1 stage
