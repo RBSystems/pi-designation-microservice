@@ -215,16 +215,11 @@ const (
 const (
 	version = "3.2.3"
 	website = "https://echo.labstack.com"
-	// http://patorjk.com/software/taag/#p=display&f=Small%20Slant&t=Echo
-	banner = `
-   ____    __
-  / __/___/ /  ___
- / _// __/ _ \/ _ \
-/___/\__/_//_/\___/ %s
-High performance, minimalist Go web framework
-%s
-____________________________________O/_______
-                                    O\
+	banner  = `
+			     _____/  |/  /___  ____  _____/ /____  _____
+			    / ___/ /|_/ / __ \/ __ \/ ___/ __/ _ \/ ___/
+			   / /__/ /  / / /_/ / / / (__  ) /_/  __/ /    
+			   \___/_/  /_/\____/_/ /_/____/\__/\___/_/     
 `
 )
 
@@ -634,7 +629,7 @@ func (e *Echo) StartServer(s *http.Server) (err error) {
 	}
 
 	if !e.HideBanner {
-		e.colorer.Printf(banner, e.colorer.Red("v"+version), e.colorer.Blue(website))
+		e.colorer.Printf(e.colorer.Green(banner))
 	}
 
 	if s.TLSConfig == nil {
