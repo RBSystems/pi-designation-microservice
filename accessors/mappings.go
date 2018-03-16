@@ -98,7 +98,7 @@ func GetAllMicroserviceMappings() ([]MicroserviceMapping, error) {
 
 	log.Printf("[accessors] getting all microservice mappings...")
 
-	var mappings []DBMicroservice
+	var mappings []Microservice
 	err := db.DB().Select(&mappings, "SELECT * FROM microservice_mappings")
 	if err != nil {
 		msg := fmt.Sprintf("mappings not found: %s", err.Error())
@@ -151,7 +151,7 @@ func GetMicroserviceMappingById(entryID int64, microservice *MicroserviceMapping
 	log.Printf("[accessors] getting microservice entry...")
 
 	//get the IDs
-	var mapping DBMicroservice
+	var mapping Microservice
 	err := db.DB().Get(&mapping, "SELECT * FROM microservice_mappings WHERE id = ?", entryID)
 	if err != nil {
 		msg := fmt.Sprintf("failed to execute query: %s", err.Error())
@@ -174,33 +174,7 @@ func GetMicroserviceMappingById(entryID int64, microservice *MicroserviceMapping
 }
 
 //takes entry in the microservice_mappings table and fleshes it out
-func FillMicroserviceMapping(mapping *DBMicroservice, output *MicroserviceMapping) error {
-
-	class, desig, err := GetClassAndDesignation(mapping.ClassID, mapping.DesigID)
-	if err != nil {
-		msg := fmt.Sprintf("entry not found: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-		return errors.New(msg)
-	}
-
-	var microservice Microservice
-	err = db.DB().Get(&microservice, "SELECT * from microservice_definitions WHERE id = ?", mapping.MicroID)
-	if err != nil {
-		msg := fmt.Sprintf("entry not found: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[accessors] %s", msg))
-		return errors.New(msg)
-	}
-
-	placeHolder := Mapping{
-		ID:          mapping.ID,
-		Class:       class,
-		Designation: desig,
-	}
-
-	output.Mapping = placeHolder
-	output.Microservice = microservice
-	output.YAML = mapping.YAML
-
+func FillMicroserviceMapping(mapping *Microservice, output *MicroserviceMapping) error {
 	return nil
 }
 
@@ -237,7 +211,7 @@ func DeleteMapping(table string, id int64) error {
 	return nil
 }
 
-func GetDockerComposeByDesignationAndClass(microservices *[]DBMicroservice, classId, desigId int64) error {
+func GetDockerComposeByDesignationAndClass(microservices *[]Microservice, classId, desigId int64) error {
 
 	log.Printf("[accessors] querying database for microservice mappings with class ID %d and designation ID %d", classId, desigId)
 
@@ -248,4 +222,58 @@ func GetDockerComposeByDesignationAndClass(microservices *[]DBMicroservice, clas
 
 	return nil
 
+}
+
+func GetDockerComposeByDesignationAndClassAndMicroservice(microservice *Microservice, roleId, branchId, microId int64) error {
+
+	log.Printf("[accessors] finding microservice with class ID: %d, designation ID: %d, microservice ID: %d", roleId, branchId, microId)
+
+	err := db.DB().Get(microservice, "SELECT * FROM microservice_mappings WHERE designation_id = ? AND class_id = ? AND microservice_id = ?", branchId, roleId, microId)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func GetMinimumSet(microservices *[]Microservice, classId, designationId int64) error {
+
+	query := `SELECT 
+				microservice_mappings.id,
+				microservice_definitions.name,
+				microservice_mappings.microservice_id,
+				microservice_mappings.designation_id,
+				minimum_microservices.class_id,
+				microservice_mappings.yaml
+				FROM microservice_mappings
+				JOIN minimum_microservices ON
+				microservice_mappings.designation_id = minimum_microservices.designation_id
+				AND microservice_mappings.microservice_id = minimum_microservices.microservice_id
+				JOIN microservice_definitions ON
+				microservice_mappings.microservice_id = microservice_definitions.id
+				WHERE minimum_microservices.class_id= ?
+				AND minimum_microservices.designation_id = ?`
+
+	return db.DB().Select(microservices, query, classId, designationId)
+}
+
+func GetPossibleSet(microservices *[]Microservice, classId, designationId int64) error {
+
+	query := `SELECT 
+				microservice_mappings.id,
+				microservice_definitions.name,
+				microservice_mappings.microservice_id,
+				microservice_mappings.designation_id,
+				potential_microservices.class_id,
+				microservice_mappings.yaml
+				FROM microservice_mappings
+				JOIN potential_microservices ON
+				microservice_mappings.designation_id = potential_microservices.designation_id
+				AND microservice_mappings.microservice_id = potential_microservices.microservice_id
+				JOIN microservice_definitions ON
+				microservice_mappings.microservice_id = microservice_definitions.id
+				WHERE potential_microservices.class_id= ?
+				AND potential_microservices.designation_id = ?`
+
+	return db.DB().Select(microservices, query, classId, designationId)
 }

@@ -71,9 +71,12 @@ func main() {
 	secure.DELETE("/variables/mappings/:id", handlers.DeleteVariableMapping)
 	secure.DELETE("/microservices/mappings/:id", handlers.DeleteMicroserviceMapping)
 
-	//where the magic happens
-	secure.GET("/configurations/designations/:class/:designation/variables", handlers.GetVariablesByDesignationAndClass)
-	secure.GET("/configurations/designations/:class/:designation/docker-compose", handlers.GetDockerComposeByDesignationAndClass)
+	secure.GET("/docker/devices/:id", handlers.GetDockerComposeByDevice)
+	secure.GET("/docker/rooms/:room/roles/:role", handlers.GetDockerComposeByRoomAndRole) //we can figure out the designation and devices based on the room
+
+	secure.GET("/environment/rooms/:room/roles/:role", handlers.GetEnvironmentByRoomAndRole)
+	secure.GET("/environment/devices/:id", handlers.GetEnvironmentByDevice)
+	secure.Static("/*", "public")
 
 	server := http.Server{
 		Addr:           PORT,

@@ -4,8 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strconv"
 
 	ac "github.com/byuoitav/pi-designation-microservice/accessors"
+	"github.com/byuoitav/pi-designation-microservice/files"
 	"github.com/fatih/color"
 	"github.com/labstack/echo"
 )
@@ -17,39 +19,40 @@ const VARIABLE_DEFINITION_TABLE = "variable_definitions"
 
 func AddVariableMapping(context echo.Context) error {
 
-	log.Printf("[handlers] binding new variable mapping...")
-
-	var mapping ac.VariableMapping
-	err := context.Bind(&mapping)
-	if err != nil {
-		msg := fmt.Sprintf("unable to bind JSON to struct: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
-	}
-
-	id, err := ac.AddMapping(
-		VARIABLE_MAPPINGS_TABLE,
-		VARIABLE_DEFINITION_COLUMN,
-		VARIABLE_COLUMN_NAME,
-		mapping.Value,
-		mapping.Variable.ID,
-		mapping.Class.ID,
-		mapping.Designation.ID)
-	if err != nil {
-		msg := fmt.Sprintf("unable to add mapping: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
-	}
-
-	var entry ac.VariableMapping
-	err = ac.GetVariableMappingById(id, &entry)
-	if err != nil {
-		msg := fmt.Sprintf("new entry not found: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusInternalServerError, msg)
-	}
-
-	return context.JSON(http.StatusOK, entry)
+	//	log.Printf("[handlers] binding new variable mapping...")
+	//
+	//	var mapping ac.VariableMapping
+	//	err := context.Bind(&mapping)
+	//	if err != nil {
+	//		msg := fmt.Sprintf("unable to bind JSON to struct: %s", err.Error())
+	//		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+	//		return context.JSON(http.StatusBadRequest, msg)
+	//	}
+	//
+	//	id, err := ac.AddMapping(
+	//		VARIABLE_MAPPINGS_TABLE,
+	//		VARIABLE_DEFINITION_COLUMN,
+	//		VARIABLE_COLUMN_NAME,
+	//		mapping.Value,
+	//		mapping.Variable.ID,
+	//		mapping.Class.ID,
+	//		mapping.Designation.ID)
+	//	if err != nil {
+	//		msg := fmt.Sprintf("unable to add mapping: %s", err.Error())
+	//		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+	//		return context.JSON(http.StatusBadRequest, msg)
+	//	}
+	//
+	//	var entry ac.VariableMapping
+	//	err = ac.GetVariableMappingById(id, &entry)
+	//	if err != nil {
+	//		msg := fmt.Sprintf("new entry not found: %s", err.Error())
+	//		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+	//		return context.JSON(http.StatusInternalServerError, msg)
+	//	}
+	//
+	//	return context.JSON(http.StatusOK, entry)
+	return nil
 }
 
 //relies on MySQL for most logic
@@ -89,40 +92,42 @@ func AddVariableMappings(context echo.Context) error {
 
 func EditVariableMapping(context echo.Context) error {
 
-	log.Printf("[handlers] binding variable mapping...")
+	//	log.Printf("[handlers] binding variable mapping...")
+	//
+	//	var mapping ac.VariableMapping
+	//	err := context.Bind(&mapping)
+	//	if err != nil {
+	//		msg := fmt.Sprintf("unable to bind JSON to struct: %s", err.Error())
+	//		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+	//		return context.JSON(http.StatusBadRequest, msg)
+	//	}
+	//
+	//	err = ac.EditMapping(
+	//		VARIABLE_MAPPINGS_TABLE,
+	//		VARIABLE_DEFINITION_COLUMN,
+	//		VARIABLE_COLUMN_NAME,
+	//		mapping.Value,
+	//		mapping.Variable.ID,
+	//		mapping.Class.ID,
+	//		mapping.Designation.ID,
+	//		mapping.ID)
+	//	if err != nil {
+	//		msg := fmt.Sprintf("variables not added: %s", err.Error())
+	//		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+	//		return context.JSON(http.StatusBadRequest, msg)
+	//	}
+	//
+	//	var entry ac.VariableMapping
+	//	err = ac.GetVariableMappingById(mapping.ID, &entry)
+	//	if err != nil {
+	//		msg := fmt.Sprintf("new entries not found: %s", err.Error())
+	//		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
+	//		return context.JSON(http.StatusInternalServerError, msg)
+	//	}
+	//
+	//	return context.JSON(http.StatusOK, entry)
 
-	var mapping ac.VariableMapping
-	err := context.Bind(&mapping)
-	if err != nil {
-		msg := fmt.Sprintf("unable to bind JSON to struct: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
-	}
-
-	err = ac.EditMapping(
-		VARIABLE_MAPPINGS_TABLE,
-		VARIABLE_DEFINITION_COLUMN,
-		VARIABLE_COLUMN_NAME,
-		mapping.Value,
-		mapping.Variable.ID,
-		mapping.Class.ID,
-		mapping.Designation.ID,
-		mapping.ID)
-	if err != nil {
-		msg := fmt.Sprintf("variables not added: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusBadRequest, msg)
-	}
-
-	var entry ac.VariableMapping
-	err = ac.GetVariableMappingById(mapping.ID, &entry)
-	if err != nil {
-		msg := fmt.Sprintf("new entries not found: %s", err.Error())
-		log.Printf("%s", color.HiRedString("[handlers] %s", msg))
-		return context.JSON(http.StatusInternalServerError, msg)
-	}
-
-	return context.JSON(http.StatusOK, entry)
+	return nil
 }
 
 func AddVariableDefinition(context echo.Context) error {
@@ -276,4 +281,44 @@ func DeleteVariableMapping(context echo.Context) error {
 	}
 
 	return context.JSON(http.StatusOK, "item successfully deleted")
+}
+
+func GetEnvironmentByRoomAndRole(context echo.Context) error {
+
+	roomId, err := strconv.Atoi(context.Param("room"))
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	roleId, err := strconv.Atoi(context.Param("role"))
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	vars, err := files.GetEnvironmentByRoomAndRole(roomId, roleId)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	//	file, err := ConvertVariablesToBytes(vars)
+	//	if err != nil {
+	//		return context.JSON(http.StatusInternalServerError, err.Error())
+	//	}
+
+	return context.JSON(http.StatusOK, vars)
+}
+
+func GetEnvironmentByDevice(context echo.Context) error {
+
+	deviceId, err := strconv.Atoi(context.Param("id"))
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, fmt.Sprintf("invalid device ID: %s", err.Error()))
+	}
+
+	hash, err := files.GetEnvironmentByDevice(deviceId)
+	if err != nil {
+		return context.JSON(http.StatusBadRequest, fmt.Sprintf("invalid device ID: %s", err.Error()))
+	}
+
+	return context.JSON(http.StatusOK, hash)
 }

@@ -121,6 +121,32 @@ func GetAllDefinitions(table string, defs *[]Definition) error {
 	return nil
 }
 
+func GetAllDesignations() ([]Designation, error) {
+
+	command := fmt.Sprintf("SELECT * FROM designation_definitions")
+
+	var output []Designation
+	err := db.DB().Select(&output, command)
+	if err != nil {
+		return []Designation{}, err
+	}
+
+	return output, nil
+}
+
+func GetAllClasses() ([]Class, error) {
+
+	command := fmt.Sprintf("SELECT * FROM class_definitions")
+
+	var output []Class
+	err := db.DB().Select(&output, command)
+	if err != nil {
+		return []Class{}, err
+	}
+
+	return output, nil
+}
+
 func DeleteDefinition(table string, id *int64) error {
 
 	log.Printf("[accessors] deleting definition entry id %d from table %s", id, table)
