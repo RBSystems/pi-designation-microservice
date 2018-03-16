@@ -12,6 +12,8 @@ jobs:
                 gvt fetch github.com/byuoitav/authmiddleware
                 gvt fetch github.com/go-sql-driver/mysql
                 gvt fetch github.com/jmoiron/sqlx
+                gvt fetch github.com/av-api
+                gvt fetch github.com/configuration-database-microservice
             - setup_remote_docker
             - run: make docker
             - run: ./deploy.sh $CIRCLE_PROJECT_REPONAME $CIRCLE_SHA1 stage
