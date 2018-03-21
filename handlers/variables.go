@@ -317,7 +317,7 @@ func GetEnvironmentByDevice(context echo.Context) error {
 
 	hash, err := files.GetEnvironmentByDevice(deviceId)
 	if err != nil {
-		return context.JSON(http.StatusBadRequest, fmt.Sprintf("invalid device ID: %s", err.Error()))
+		return context.JSON(http.StatusBadRequest, fmt.Sprintf("environment request failed: %s", err.Error()))
 	}
 
 	return context.JSON(http.StatusOK, hash)
