@@ -18,12 +18,14 @@ func GetDockerComposeByDevice(deviceId int) (string, error) {
 
 	designationId, device, microservices, err := FetchDeviceMetaData(deviceId)
 	if err != nil {
-		return "", err
+		msg := fmt.Sprintf("device meta-data not found: %s", err.Error())
+		return "", msg
 	}
 
 	deviceSet, err := configuration.GetDockerComposeByDevice(device, designationId, microservices)
 	if err != nil {
-		return "", err
+		msg := fmt.Sprintf("device microservices not found: %s", err.Error())
+		return "", msg
 	}
 
 	return WriteDockerComposeFile(deviceSet)
