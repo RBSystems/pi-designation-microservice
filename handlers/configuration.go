@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 
 	ac "github.com/byuoitav/pi-designation-microservice/accessors"
 	"github.com/fatih/color"
@@ -52,9 +53,10 @@ func ConvertVariablesToBytes(vars []ac.VariableMapping) ([]byte, error) {
 
 	for _, variable := range vars {
 
+		output.WriteString("export ")
 		output.WriteString(variable.Variable.Name)
 		output.WriteString("=")
-		output.WriteString(variable.Value)
+		output.WriteString(fmt.Sprinf("\"%v\"", strings.Trim(variable.Value, "\"")))
 		output.WriteString("\n")
 	}
 
