@@ -56,7 +56,7 @@ func ConvertVariablesToBytes(vars []ac.VariableMapping) ([]byte, error) {
 		output.WriteString("export ")
 		output.WriteString(variable.Variable.Name)
 		output.WriteString("=")
-		output.WriteString(fmt.Sprinf("\"%v\"", strings.Trim(variable.Value, "\"")))
+		output.WriteString(fmt.Sprintf("\"%v\"", strings.Trim(variable.Value, "\"")))
 		output.WriteString("\n")
 	}
 
